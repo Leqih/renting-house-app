@@ -189,11 +189,6 @@ export default function Map3DView({ selectedCollege, profile, onViewListing, onR
   const pinElemsRef = useRef<Map<number, HTMLDivElement>>(new Map());
   // Extended coords map — includes sublease pin IDs mapped to their building coords
   const coordsForPinsRef = useRef<Record<number, [number, number]>>({ ...listingCoords });
-  // Refs kept in sync during render so stable callbacks (map listeners) can read current values
-  const modeRef = useRef<'rent' | 'sublease'>(mode);
-  const subleasePinsRef = useRef<SubleasePin[]>(subleasePins);
-  modeRef.current = mode;
-  subleasePinsRef.current = subleasePins;
   const [showZones, setShowZones] = useState(false);
 
   const rankedListings = profile
@@ -227,24 +222,13 @@ export default function Map3DView({ selectedCollege, profile, onViewListing, onR
       });
     };
     const updatePinState = () => {
-      if (modeRef.current === 'sublease') {
-        // Recalculate sublease pin positions on resize — use registered coords
-        const positions = subleasePinsRef.current.map(s => {
-          const coords = coordsForPinsRef.current[s.id];
-          if (!coords) return null;
-          const pt = map.project(coords);
-          return { id: s.id, x: pt.x, y: pt.y };
-        }).filter((p): p is PinPosition => p !== null);
-        setPinPositions(positions);
-      } else {
-        const positions = listings.map(l => {
-          const coords = listingCoords[l.id];
-          if (!coords) return null;
-          const pt = map.project(coords);
-          return { id: l.id, x: pt.x, y: pt.y };
-        }).filter((p): p is PinPosition => p !== null);
-        setPinPositions(positions);
-      }
+      const positions = listings.map(l => {
+        const coords = listingCoords[l.id];
+        if (!coords) return null;
+        const pt = map.project(coords);
+        return { id: l.id, x: pt.x, y: pt.y };
+      }).filter((p): p is PinPosition => p !== null);
+      setPinPositions(positions);
     };
     map.on('move', movePinsDirect);
     map.on('resize', updatePinState);
