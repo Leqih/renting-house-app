@@ -138,27 +138,23 @@ function makeCircle(center: [number, number], radiusM: number, steps = 64): GeoJ
 
 export interface SubleasePin {
   id: number
-  type: 'sublease' | 'transfer' | 'roomshare'
   name: string
   address: string
   price: number
-  marketRate: number
+  originalPrice: number
   via: 'individual' | 'official'
   utilitiesIncluded: boolean
   img: string
   beds: string
   sqft: string
-  availableFrom: string   // ISO "2025-05-01"
-  availableTo: string     // ISO "2025-08-15"
+  available: string
+  period: string
   badge: string
   badgeColor: string
   listingId: number
-  daysUntilLeave: number
+  daysLeft: number
   postedBy: string
   furnished: boolean
-  leaseEnds?: string
-  renewalPossible?: boolean
-  totalRooms?: number
 }
 
 interface Props {
@@ -607,14 +603,11 @@ export default function Map3DView({ selectedCollege, profile, onViewListing, onR
       {/* Pin overlay */}
       <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 5 }}>
         {mode === 'sublease' ? (
-          /* ── Sublease pins — discount + urgency colour ── */
+          /* ── Sublease pins (orange) ── */
           pinPositions.map(pos => {
             const s = subleasePins.find(p => p.id === pos.id);
             if (!s) return null;
             const isSelected = selectedId === s.id;
-            const discount = Math.round((1 - s.price / s.marketRate) * 100);
-            const urgColor = s.daysUntilLeave <= 7 ? '#ef4444' : s.daysUntilLeave <= 21 ? '#f97316' : '#6b7280';
-            const typeLabel = s.type === 'sublease' ? '转租' : s.type === 'transfer' ? '转让' : '合租';
             return (
               <div
                 key={s.id}
@@ -635,25 +628,26 @@ export default function Map3DView({ selectedCollege, profile, onViewListing, onR
                   display: 'flex', flexDirection: 'column', alignItems: 'center', transition: 'transform 0.2s ease',
                 }}
               >
-                {s.daysUntilLeave <= 7 && !isSelected && (
-                  <span style={{ fontSize: 9, background: '#ef4444', color: 'white', fontWeight: 800, padding: '2px 7px', borderRadius: 20, marginBottom: 4, whiteSpace: 'nowrap' }}>
-                    🔴 {s.daysUntilLeave}d
-                  </span>
+                {s.daysLeft <= 7 && !isSelected && (
+                  <span style={{ fontSize: 9, background: '#ef4444', color: 'white', fontWeight: 800, padding: '2px 7px', borderRadius: 20, marginBottom: 4, whiteSpace: 'nowrap' }}>{s.daysLeft}d left</span>
                 )}
                 <div style={{
                   background: isSelected ? '#1c1c1e' : 'rgba(255,255,255,0.97)',
-                  borderRadius: 24, padding: '5px 11px',
-                  display: 'flex', alignItems: 'center', gap: 4,
+                  color: isSelected ? 'white' : '#1c1c1e',
+                  borderRadius: 24, padding: '6px 13px',
+                  display: 'flex', alignItems: 'center', gap: 5,
                   boxShadow: isSelected ? '0 6px 24px rgba(0,0,0,0.3)' : '0 2px 12px rgba(0,0,0,0.14)',
-                  border: isSelected ? 'none' : `2px solid ${urgColor}`,
-                  whiteSpace: 'nowrap',
+                  border: isSelected ? 'none' : '1px solid rgba(0,0,0,0.08)',
+                  fontSize: 12, fontWeight: 800, whiteSpace: 'nowrap',
                 }}>
-                  <span style={{ fontSize: 10, fontWeight: 900, color: isSelected ? 'rgba(255,255,255,0.65)' : urgColor }}>-{discount}%</span>
-                  <span style={{ fontSize: 12, fontWeight: 800, color: isSelected ? 'white' : '#1c1c1e' }}>${s.price}</span>
-                  <span style={{ fontSize: 9, color: isSelected ? 'rgba(255,255,255,0.45)' : '#9ca3af' }}>{typeLabel}</span>
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={isSelected ? 'white' : '#1c1c1e'} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                    <polyline points="9 22 9 12 15 12 15 22"/>
+                  </svg>
+                  <span>${s.price}/mo</span>
                 </div>
-                <div style={{ width: 2, height: 8, background: isSelected ? '#1c1c1e' : urgColor, marginTop: -1 }} />
-                <div style={{ width: 7, height: 7, borderRadius: '50%', background: isSelected ? '#1c1c1e' : urgColor, border: '2px solid white', boxShadow: '0 1px 4px rgba(0,0,0,0.25)', marginTop: -1 }} />
+                <div style={{ width: 2, height: 8, background: isSelected ? '#1c1c1e' : 'rgba(0,0,0,0.2)', marginTop: -1 }} />
+                <div style={{ width: 7, height: 7, borderRadius: '50%', background: isSelected ? '#1c1c1e' : '#9ca3af', border: '2px solid white', boxShadow: '0 1px 4px rgba(0,0,0,0.25)', marginTop: -1 }} />
               </div>
             );
           })
@@ -820,10 +814,6 @@ export default function Map3DView({ selectedCollege, profile, onViewListing, onR
       {mode === 'sublease' && (() => {
         const s = subleasePins.find(p => p.id === selectedId);
         if (!s) return null;
-        const discount = Math.round((1 - s.price / s.marketRate) * 100);
-        const urgColor = s.daysUntilLeave <= 7 ? '#ef4444' : s.daysUntilLeave <= 21 ? '#f97316' : '#6b7280';
-        const typeLabel = s.type === 'sublease' ? '🔄 转租' : s.type === 'transfer' ? '📋 转让' : '🏠 合租';
-        const fmtD = (d: string) => { const [,m,day] = d.split('-'); return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m-1] + ' ' + +day; };
         return (
           <div style={{
             position: 'absolute', top: 130, left: 16, width: 300,
@@ -832,57 +822,64 @@ export default function Map3DView({ selectedCollege, profile, onViewListing, onR
             overflow: 'hidden', zIndex: 30, animation: 'cardIn 0.22s ease',
           }}>
             {/* Photo */}
-            <div style={{ position: 'relative', height: 148 }}>
+            <div style={{ position: 'relative', height: 160 }}>
               <img src={s.img} alt={s.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(20,20,20,0.9) 0%, rgba(0,0,0,0.1) 55%, transparent 100%)' }} />
-              {/* Type + urgency badges */}
-              <div style={{ position: 'absolute', top: 10, left: 10, display: 'flex', gap: 5, alignItems: 'center' }}>
-                <span style={{ fontSize: 10, fontWeight: 800, padding: '3px 8px', borderRadius: 20, background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(6px)', color: 'white', border: '1px solid rgba(255,255,255,0.2)' }}>
-                  {typeLabel}
+              {/* Badges */}
+              <div style={{ position: 'absolute', top: 12, left: 12, display: 'flex', gap: 6, alignItems: 'center' }}>
+                <span style={{ fontSize: 10, fontWeight: 800, padding: '4px 9px', borderRadius: 20, background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(6px)', color: 'white', border: '1px solid rgba(255,255,255,0.2)' }}>
+                  {s.period}
                 </span>
-                {s.daysUntilLeave <= 21 && (
-                  <span style={{ fontSize: 10, fontWeight: 800, padding: '3px 8px', borderRadius: 20, background: urgColor, color: 'white' }}>{s.daysUntilLeave}d left</span>
+                {s.daysLeft <= 7 && (
+                  <span style={{ fontSize: 10, fontWeight: 800, padding: '4px 9px', borderRadius: 20, background: '#ef4444', color: 'white' }}>{s.daysLeft}d left</span>
                 )}
               </div>
               {/* Close */}
               <button onClick={() => setSelectedId(null)}
-                style={{ position: 'absolute', top: 10, right: 10, width: 30, height: 30, background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.2)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 18, fontWeight: 300, lineHeight: 1 }}>×</button>
-              {/* Price + savings bottom */}
-              <div style={{ position: 'absolute', bottom: 10, left: 12, display: 'flex', alignItems: 'baseline', gap: 6 }}>
-                <span style={{ fontSize: 20, fontWeight: 900, color: 'white' }}>${s.price}<span style={{ fontSize: 11, fontWeight: 400, color: 'rgba(255,255,255,0.5)' }}>/mo</span></span>
-                <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', textDecoration: 'line-through' }}>${s.marketRate}</span>
-                <span style={{ fontSize: 11, fontWeight: 800, color: '#4ade80' }}>-{discount}%</span>
+                style={{ position: 'absolute', top: 12, right: 12, width: 32, height: 32, background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.2)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 18, fontWeight: 300, lineHeight: 1 }}>×</button>
+              {/* Price over photo bottom */}
+              <div style={{ position: 'absolute', bottom: 12, left: 14 }}>
+                <span style={{ fontSize: 22, fontWeight: 900, color: 'white', letterSpacing: '-0.5px' }}>${s.price}</span>
+                <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', fontWeight: 400 }}>/mo</span>
               </div>
             </div>
 
             {/* Body */}
-            <div style={{ padding: '11px 14px 14px' }}>
-              <p style={{ fontWeight: 800, fontSize: 14, color: 'white', lineHeight: 1.2, marginBottom: 2 }}>{s.name}</p>
-              <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', marginBottom: 8 }}>{s.address}</p>
+            <div style={{ padding: '12px 16px 16px' }}>
+              <p style={{ fontWeight: 800, fontSize: 15, color: 'white', lineHeight: 1.2, marginBottom: 3 }}>{s.name}</p>
+              <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginBottom: 10 }}>{s.address}</p>
 
-              {/* Date range */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8, padding: '7px 11px', background: 'rgba(255,255,255,0.06)', borderRadius: 10 }}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.45)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)', fontWeight: 600 }}>{fmtD(s.availableFrom)} → {fmtD(s.availableTo)}</span>
+              {/* Available dates */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10, padding: '8px 12px', background: 'rgba(255,255,255,0.06)', borderRadius: 12 }}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.75)', fontWeight: 600 }}>{s.available}</span>
               </div>
 
-              {/* Specs row */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, flexWrap: 'wrap' }}>
-                <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)' }}>{s.beds}</span>
-                <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)' }}>{s.sqft}</span>
-                {s.furnished && <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 20, background: 'rgba(251,191,36,0.15)', color: '#fbbf24' }}>Furnished</span>}
-                {s.utilitiesIncluded && <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 20, background: 'rgba(74,222,128,0.12)', color: '#4ade80' }}>Utils incl.</span>}
+              {/* Specs */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' }}>
+                <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                  {s.beds}
+                </span>
+                <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+                  {s.sqft}
+                </span>
+                {s.furnished && (
+                  <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 20, background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.2)' }}>Furnished</span>
+                )}
               </div>
 
               {/* Poster */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, padding: '8px 11px', background: 'rgba(255,255,255,0.05)', borderRadius: 10, border: '1px solid rgba(255,255,255,0.07)' }}>
-                <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, color: 'white', flexShrink: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14, padding: '9px 12px', background: 'rgba(255,255,255,0.05)', borderRadius: 12, border: '1px solid rgba(255,255,255,0.08)' }}>
+                <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, color: 'white', flexShrink: 0 }}>
                   {s.postedBy[0]}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontSize: 11, fontWeight: 700, color: 'white', marginBottom: 1 }}>{s.postedBy}</p>
-                  <p style={{ fontSize: 9, color: 'rgba(255,255,255,0.35)' }}>UIUC student · {s.via === 'individual' ? '个人发布' : '平台挂牌'}</p>
+                  <p style={{ fontSize: 12, fontWeight: 700, color: 'white', marginBottom: 1 }}>{s.postedBy}</p>
+                  <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)' }}>Posted by student · UIUC</p>
                 </div>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
               </div>
 
               {/* CTAs */}
@@ -931,10 +928,6 @@ export default function Map3DView({ selectedCollege, profile, onViewListing, onR
             <div className="flex items-stretch gap-0" style={{ scrollSnapType: 'x mandatory', overflowX: 'auto', scrollbarWidth: 'none' }}>
               {subleasePins.slice(0, 3).map(s => {
                 const isActive = selectedId === s.id
-                const disc = Math.round((1 - s.price / s.marketRate) * 100)
-                const urgColor = s.daysUntilLeave <= 7 ? 'bg-red-500' : s.daysUntilLeave <= 21 ? 'bg-orange-400' : ''
-                const typeLabel = s.type === 'sublease' ? '🔄 转租' : s.type === 'transfer' ? '📋 转让' : '🏠 合租'
-                const fmtD = (d: string) => { const [,m,day] = d.split('-'); return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m-1]+' '+d.split('-')[2].replace(/^0/,''); }
                 return (
                   <button key={s.id}
                     onClick={() => {
@@ -942,35 +935,40 @@ export default function Map3DView({ selectedCollege, profile, onViewListing, onR
                       const coords = coordsForPinsRef.current[s.id]
                       if (coords && mapRef.current) mapRef.current.flyTo({ center: coords, zoom: 16.5, pitch: 62, bearing: mapRef.current.getBearing(), duration: 700, essential: true })
                     }}
-                    className={`flex flex-shrink-0 w-[270px] rounded-2xl overflow-hidden transition-all h-[130px] mx-2 bg-white text-left ${isActive ? 'ring-2 ring-[#1c1c1e] shadow-xl' : 'shadow-lg hover:shadow-xl'}`}
+                    className={`flex flex-1 min-w-0 rounded-2xl overflow-hidden transition-all h-[136px] mx-2 bg-white text-left ${isActive ? 'ring-2 ring-[#1c1c1e] shadow-xl' : 'shadow-lg hover:shadow-xl'}`}
                   >
-                    <div className="relative w-[95px] flex-shrink-0 h-full">
+                    <div className="relative w-[110px] flex-shrink-0 h-full">
                       <img src={s.img} className="w-full h-full object-cover" />
-                      {/* urgency badge */}
-                      {s.daysUntilLeave <= 21 && urgColor && (
-                        <div className={`absolute top-1.5 left-1.5 ${urgColor} text-white text-[8px] font-black px-1.5 py-0.5 rounded-full leading-none`}>{s.daysUntilLeave}d</div>
+                      {s.daysLeft <= 7 && (
+                        <div className="absolute top-2 left-2 bg-red-500 text-white text-[9px] font-black px-2 py-1 rounded-full leading-none">{s.daysLeft}d left</div>
                       )}
                     </div>
-                    <div className="flex flex-col justify-between px-2.5 py-2.5 flex-1 min-w-0">
-                      {/* Header row */}
-                      <div className="flex items-start justify-between gap-1">
-                        <p className="text-[12px] font-bold text-[#1c1c1e] leading-tight truncate flex-1">{s.name}</p>
-                        <span className="flex-shrink-0 text-[8px] font-bold px-1.5 py-0.5 rounded-full bg-[#f5f4f0] text-[#6c6a66] ml-1">{typeLabel}</span>
+                    <div className="flex flex-col justify-between px-3 py-3 flex-1 min-w-0">
+                      <div>
+                        <div className="flex items-start justify-between gap-1 mb-1">
+                          <div className="min-w-0">
+                            <p className="text-[13px] font-bold text-[#1c1c1e] leading-tight truncate">{s.name}</p>
+                            <p className="text-[11px] text-[#9ca3af] leading-tight truncate">{s.address}</p>
+                          </div>
+                          <span className={`flex-shrink-0 text-[9px] font-bold px-2 py-0.5 rounded-full ${s.badgeColor}`}>{s.period}</span>
+                        </div>
+                        {/* Price row: current + original crossed out */}
+                        <div className="flex items-baseline gap-1.5">
+                          <p className="text-[15px] font-black text-[#1c1c1e] leading-tight">${s.price}<span className="text-[11px] font-normal text-[#9ca3af]">/mo</span></p>
+                          <span className="text-[11px] text-[#c0bfbb] line-through">${s.originalPrice}</span>
+                        </div>
                       </div>
-                      {/* Price + savings */}
-                      <div className="flex items-baseline gap-1.5 mt-0.5">
-                        <span className="text-[14px] font-black text-[#1c1c1e]">${s.price}<span className="text-[10px] font-normal text-[#9ca3af]">/mo</span></span>
-                        <span className="text-[10px] text-[#c0bfbb] line-through">${s.marketRate}</span>
-                        <span className="text-[10px] font-bold text-green-600 ml-auto">-{disc}%</span>
-                      </div>
-                      {/* Dates */}
-                      <p className="text-[9px] text-[#9ca3af] mt-0.5">📅 {fmtD(s.availableFrom)} → {fmtD(s.availableTo)}</p>
-                      {/* Tags */}
-                      <div className="flex items-center gap-1 flex-wrap mt-1">
-                        {s.furnished && <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-600">Furnished</span>}
-                        {s.utilitiesIncluded && <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-full bg-green-50 text-green-600">Utils ✓</span>}
-                        <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded-full ${s.via === 'individual' ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'}`}>
-                          {s.via === 'individual' ? '个人' : '平台'}
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-[10px] text-[#6c6a66]">{s.beds}</span>
+                        <span className="text-[10px] text-[#6c6a66]">·</span>
+                        <span className="text-[10px] text-[#6c6a66]">{s.sqft}</span>
+                        {/* Via tag */}
+                        <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${s.via === 'individual' ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'}`}>
+                          {s.via === 'individual' ? 'Individual' : 'Official'}
+                        </span>
+                        {/* Utilities tag */}
+                        <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${s.utilitiesIncluded ? 'bg-green-50 text-green-600' : 'bg-amber-50 text-amber-600'}`}>
+                          {s.utilitiesIncluded ? 'Utils incl.' : 'Utils extra'}
                         </span>
                       </div>
                     </div>
