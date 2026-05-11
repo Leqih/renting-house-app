@@ -34,8 +34,11 @@ const floorOptions = ['1', '2', '3', '4', '5', '6+']
 
 const amenityOptions = [
   { key: 'laundry', label: 'In-unit laundry' },
-  { key: 'pet', label: 'Pets allowed' },
-  { key: 'parking', label: 'Parking slot' },
+  { key: 'pet',     label: 'Pets allowed' },
+  { key: 'parking', label: 'Parking' },
+  { key: 'study',   label: 'Study room' },
+  { key: 'common',  label: 'Common space' },
+  { key: 'gym',     label: 'Gym' },
 ]
 
 interface Area {
@@ -61,6 +64,10 @@ interface SubleaseItem {
   name: string
   address: string
   price: number
+  originalPrice: number       // original lease price per month
+  via: 'individual' | 'official'  // individual subletter or via official platform
+  utilitiesIncluded: boolean
+  utilitiesNote: string       // details on what's covered
   beds: string
   sqft: string
   img: string
@@ -72,6 +79,7 @@ interface SubleaseItem {
   daysLeft: number
   duration: number   // months
   furnished: boolean
+  amenities: string[]
   area: string
   listingId: number  // maps to listingCoords key in Map3DView
 }
@@ -82,6 +90,10 @@ const subleaseListings: SubleaseItem[] = [
     name: 'Green St Studio Sublet',
     address: '302 E Green St, Champaign',
     price: 620,
+    originalPrice: 750,
+    via: 'individual',
+    utilitiesIncluded: true,
+    utilitiesNote: 'Heat, water & internet all included',
     beds: 'Studio',
     sqft: '490 sqft',
     img: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400&q=80',
@@ -93,6 +105,7 @@ const subleaseListings: SubleaseItem[] = [
     daysLeft: 12,
     duration: 3,
     furnished: true,
+    amenities: ['Furnished', 'Utilities incl.', 'Study room', 'Common space'],
     area: 'green',
     listingId: 3,
   },
@@ -101,6 +114,10 @@ const subleaseListings: SubleaseItem[] = [
     name: '1BR Chalmers Sublet',
     address: '508 E Chalmers, Champaign',
     price: 750,
+    originalPrice: 895,
+    via: 'individual',
+    utilitiesIncluded: false,
+    utilitiesNote: 'Water covered; electric + internet extra (~$80/mo)',
     beds: '1B1B',
     sqft: '650 sqft',
     img: 'https://images.unsplash.com/photo-1555636222-cae831e670b3?w=400&q=80',
@@ -112,6 +129,7 @@ const subleaseListings: SubleaseItem[] = [
     daysLeft: 28,
     duration: 3,
     furnished: false,
+    amenities: ['Parking', 'Gym', 'Common space'],
     area: 'chalmers',
     listingId: 6,
   },
@@ -120,6 +138,10 @@ const subleaseListings: SubleaseItem[] = [
     name: 'Main Quad 2BR Sublet',
     address: '410 W Clark St, Champaign',
     price: 880,
+    originalPrice: 1050,
+    via: 'official',
+    utilitiesIncluded: true,
+    utilitiesNote: 'Heat & water included; electric extra (~$45/mo)',
     beds: '2B1B',
     sqft: '820 sqft',
     img: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=400&q=80',
@@ -131,6 +153,7 @@ const subleaseListings: SubleaseItem[] = [
     daysLeft: 60,
     duration: 4,
     furnished: true,
+    amenities: ['Furnished', 'Gym', 'Study room', 'Common space'],
     area: 'quad',
     listingId: 4,
   },
@@ -139,6 +162,10 @@ const subleaseListings: SubleaseItem[] = [
     name: 'First St Studio Sublet',
     address: '1011 S First St, Champaign',
     price: 510,
+    originalPrice: 680,
+    via: 'individual',
+    utilitiesIncluded: true,
+    utilitiesNote: 'All utilities included, no extra charges',
     beds: 'Studio',
     sqft: '380 sqft',
     img: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400&q=80',
@@ -150,6 +177,7 @@ const subleaseListings: SubleaseItem[] = [
     daysLeft: 5,
     duration: 2,
     furnished: true,
+    amenities: ['Furnished', 'Utilities incl.', 'Parking', 'Study room'],
     area: 'first',
     listingId: 1,
   },
@@ -158,6 +186,10 @@ const subleaseListings: SubleaseItem[] = [
     name: 'South Campus 1BR Sublet',
     address: '901 S Lincoln Ave, Urbana',
     price: 690,
+    originalPrice: 800,
+    via: 'individual',
+    utilitiesIncluded: false,
+    utilitiesNote: 'Water included; electric + internet extra (~$100/mo)',
     beds: '1B1B',
     sqft: '580 sqft',
     img: 'https://images.unsplash.com/photo-1484154218962-a197022b5858?w=400&q=80',
@@ -169,6 +201,7 @@ const subleaseListings: SubleaseItem[] = [
     daysLeft: 90,
     duration: 4,
     furnished: false,
+    amenities: ['Parking', 'Common space', 'Gym'],
     area: 'south',
     listingId: 8,
   },
@@ -186,7 +219,7 @@ const durationOptions = [
   { label: 'Full sem', months: 4 },
 ]
 
-export default function WebExploreScreen({ onViewListing: _onViewListing, onNavigate, initialListingId, initialSubleaseId, savedIds: savedIdsProp, onToggleSave }: Props) {
+export default function WebExploreScreen({ onViewListing: _onViewListing, onNavigate, initialListingId, initialSubleaseId, savedIds, onToggleSave }: Props) {
   const [profile] = useState<StudentProfile>({ college: null, budgetMax: 900, beds: 'any' })
   const [localDetailId, setLocalDetailId] = useState<number | null>(null)
   const [mode, setMode] = useState<'rent' | 'sublease'>(initialSubleaseId ? 'sublease' : 'rent')
@@ -207,7 +240,8 @@ export default function WebExploreScreen({ onViewListing: _onViewListing, onNavi
   // Sublease filters
   const [selectedPeriod, setSelectedPeriod] = useState<string>('')
   const [selectedDuration, setSelectedDuration] = useState<number | null>(null)
-  const [furnishedOnly, setFurnishedOnly] = useState(false)
+  const [subAmenities, setSubAmenities] = useState<Set<string>>(new Set())
+  const [subAmenitiesOpen, setSubAmenitiesOpen] = useState(false)
   const [subleaseBed, setSubleaseBed] = useState<string>('')
   const [subleaseArea, setSubleaseArea] = useState<string>('')
   const [subleasePriceMin, setSubleasePriceMin] = useState(400)
@@ -218,25 +252,17 @@ export default function WebExploreScreen({ onViewListing: _onViewListing, onNavi
   const subMaxDebounce = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const [panelCollapsed, setPanelCollapsed] = useState(false)
-  const [localSavedIds, setLocalSavedIds] = useState<Set<number>>(new Set())
-  const savedIds = savedIdsProp ?? localSavedIds
-  const [highlightPinId, setHighlightPinId] = useState<number | null>(initialSubleaseId ?? initialListingId ?? null)
+  const [highlightPinId] = useState<number | null>(initialSubleaseId ?? initialListingId ?? null)
   const [localSubleaseId, setLocalSubleaseId] = useState<number | null>(null)
   const [messageTarget, setMessageTarget] = useState<SubleasePin | null>(null)
   const [messageText, setMessageText] = useState('')
-
-  const toggleSaved = (id: number) => {
-    if (onToggleSave) { onToggleSave(id); return; }
-    setLocalSavedIds(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n })
-  }
 
   const toggleAmenity = (k: string) => setAmenities(prev => { const n = new Set(prev); n.has(k) ? n.delete(k) : n.add(k); return n })
 
   // Rent filter logic
   const filtered = listings.filter(l => {
     if (placeType === 'studio' && !l.beds.toLowerCase().includes('studio')) return false
-    if (placeType === 'house') return false
-    if (placeType === 'room') return false
+    // 'house' and 'room' types not in current dataset — show all listings
     if (selectedArea) {
       const area = areas.find(a => a.id === selectedArea)
       if (area && !area.listingIds.includes(l.id)) return false
@@ -270,18 +296,21 @@ export default function WebExploreScreen({ onViewListing: _onViewListing, onNavi
     if (subleaseArea && s.area !== subleaseArea) return false
     if (subleaseBed) {
       if (subleaseBed === 'Studio' && s.beds !== 'Studio') return false
-      if (subleaseBed !== 'Studio' && !s.beds.startsWith(subleaseBed + 'B')) return false
+      if (subleaseBed === '3+') {
+        const n = parseInt(s.beds); if (isNaN(n) || n < 3) return false
+      } else if (subleaseBed !== 'Studio' && !s.beds.startsWith(subleaseBed + 'B')) return false
     }
     if (selectedDuration && s.duration < selectedDuration) return false
-    if (furnishedOnly && !s.furnished) return false
+    if (subAmenities.size > 0 && ![...subAmenities].every(k => s.amenities.some(a => a.toLowerCase().includes(k)))) return false
     if (s.price < subleasePriceMin || s.price > subleasePriceMax) return false
     return true
   })
 
   // Memoize so Map3DView's subleasePins useEffect doesn't reset selectedId on every render
   const subleasePinsForMap = useMemo<SubleasePin[]>(() => filteredSubleases.map(s => ({
-    id: s.id, name: s.name, address: s.address, price: s.price, img: s.img,
-    beds: s.beds, sqft: s.sqft, available: s.available, period: s.period,
+    id: s.id, name: s.name, address: s.address, price: s.price,
+    originalPrice: s.originalPrice, via: s.via, utilitiesIncluded: s.utilitiesIncluded,
+    img: s.img, beds: s.beds, sqft: s.sqft, available: s.available, period: s.period,
     badge: s.badge, badgeColor: s.badgeColor, listingId: s.listingId,
     daysLeft: s.daysLeft, postedBy: s.postedBy, furnished: s.furnished,
   })), [filteredSubleases.map(s => s.id).join(',')]); // eslint-disable-line
@@ -374,9 +403,14 @@ export default function WebExploreScreen({ onViewListing: _onViewListing, onNavi
           {/* Photo */}
           <div className="relative h-[260px] flex-shrink-0">
             <img src={s.img} alt={s.name} className="w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
             <div className="absolute bottom-4 left-6">
-              <p className="text-[28px] font-black text-white leading-none">${s.price}<span className="text-[14px] font-normal text-white/60">/mo</span></p>
+              {/* Price: current + original crossed out */}
+              <div className="flex items-baseline gap-2">
+                <p className="text-[30px] font-black text-white leading-none">${s.price}<span className="text-[14px] font-normal text-white/60">/mo</span></p>
+                <span className="text-[14px] font-semibold text-white/50 line-through">${s.originalPrice}/mo</span>
+              </div>
+              <p className="text-[11px] text-green-300 font-bold mt-0.5">Save ${s.originalPrice - s.price}/mo · {Math.round((s.originalPrice - s.price) / s.originalPrice * 100)}% off list price</p>
             </div>
           </div>
 
@@ -386,6 +420,47 @@ export default function WebExploreScreen({ onViewListing: _onViewListing, onNavi
             <div>
               <h1 className="text-[22px] font-black text-[#1c1c1e] leading-tight mb-1">{s.name}</h1>
               <p className="text-[13px] text-[#9ca3af]">{s.address}</p>
+            </div>
+
+            {/* Key info cards: via + utilities */}
+            <div className="grid grid-cols-2 gap-3">
+              {/* Via */}
+              <div className={`flex flex-col gap-1 px-4 py-3 rounded-2xl border ${s.via === 'individual' ? 'bg-blue-50 border-blue-100' : 'bg-purple-50 border-purple-100'}`}>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#9ca3af]">Listed via</span>
+                <div className="flex items-center gap-1.5">
+                  {s.via === 'individual' ? (
+                    <>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                      <span className="text-[13px] font-bold text-blue-700">Individual</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+                      <span className="text-[13px] font-bold text-purple-700">Official platform</span>
+                    </>
+                  )}
+                </div>
+                <span className="text-[10px] text-[#9ca3af] leading-tight">{s.via === 'individual' ? 'Direct from student, no broker fee' : 'Via landlord platform, contract guaranteed'}</span>
+              </div>
+
+              {/* Utilities */}
+              <div className={`flex flex-col gap-1 px-4 py-3 rounded-2xl border ${s.utilitiesIncluded ? 'bg-green-50 border-green-100' : 'bg-amber-50 border-amber-100'}`}>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#9ca3af]">Utilities</span>
+                <div className="flex items-center gap-1.5">
+                  {s.utilitiesIncluded ? (
+                    <>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                      <span className="text-[13px] font-bold text-green-700">Included</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="12"/><circle cx="12" cy="16" r="1" fill="#d97706"/></svg>
+                      <span className="text-[13px] font-bold text-amber-700">Partial</span>
+                    </>
+                  )}
+                </div>
+                <span className="text-[10px] text-[#9ca3af] leading-tight">{s.utilitiesNote}</span>
+              </div>
             </div>
 
             {/* Period + dates pill row */}
@@ -442,7 +517,7 @@ export default function WebExploreScreen({ onViewListing: _onViewListing, onNavi
                 onClick={() => {
                   const tmpl = `Hi ${s.postedBy.split(' ')[0]}! I'm interested in your sublease at ${s.address} for ${s.period} (${s.available}, $${s.price}/mo). Could you share more details? I'm a UIUC student and this fits my schedule perfectly.`
                   setMessageText(tmpl)
-                  setMessageTarget({ id: s.id, name: s.name, address: s.address, price: s.price, img: s.img, beds: s.beds, sqft: s.sqft, available: s.available, period: s.period, badge: s.badge, badgeColor: s.badgeColor, listingId: s.listingId, daysLeft: s.daysLeft, postedBy: s.postedBy, furnished: s.furnished })
+                  setMessageTarget({ id: s.id, name: s.name, address: s.address, price: s.price, originalPrice: s.originalPrice, via: s.via, utilitiesIncluded: s.utilitiesIncluded, img: s.img, beds: s.beds, sqft: s.sqft, available: s.available, period: s.period, badge: s.badge, badgeColor: s.badgeColor, listingId: s.listingId, daysLeft: s.daysLeft, postedBy: s.postedBy, furnished: s.furnished })
                 }}
                 className="flex-shrink-0 px-4 py-2 bg-[#1c1c1e] text-white rounded-xl text-[12px] font-bold"
               >
@@ -785,144 +860,51 @@ export default function WebExploreScreen({ onViewListing: _onViewListing, onNavi
                   </div>
                 </div>
 
-                {/* Furnished */}
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-bold text-[#1c1c1e]">Furnished only</p>
-                    <p className="text-[11px] text-[#9ca3af] mt-0.5">Includes furniture & appliances</p>
-                  </div>
-                  <button onClick={() => setFurnishedOnly(f => !f)} className={`w-12 h-6 rounded-full relative transition-colors flex-shrink-0 ${furnishedOnly ? 'bg-[#1c1c1e]' : 'bg-[#e5e4e0]'}`}>
-                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${furnishedOnly ? 'translate-x-7' : 'translate-x-1'}`} />
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-
-          <div className="hidden">
-
-          {/* Listing cards */}
-          <div className="flex-1 min-h-0 overflow-y-auto px-3 py-3 space-y-2.5">
-            {mode === 'rent' ? (
-              <>
-                {filtered.length === 0 && (
-                  <div className="flex flex-col items-center justify-center py-12 text-center">
-                    <div className="w-12 h-12 rounded-2xl bg-[#f5f4f0] flex items-center justify-center mb-3">
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                    </div>
-                    <p className="text-[13px] font-semibold text-[#1c1c1e]">No listings found</p>
-                    <p className="text-[11px] text-[#9ca3af] mt-1">Try adjusting your filters</p>
-                  </div>
-                )}
-                {filtered.map(listing => (
-                  <div key={listing.id} onClick={() => setLocalDetailId(listing.id)} className="cursor-pointer flex bg-white rounded-2xl border border-[#e8e7e3] hover:border-[#c0bfbb] hover:shadow-md transition-all overflow-hidden h-[100px] group">
-                    <div className="relative w-[100px] flex-shrink-0 h-full">
-                      <img src={listing.img} alt={listing.name} className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500" />
-                      <div className="absolute top-2 left-2">
-                        <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${listing.badgeColor}`}>{listing.badge}</span>
-                      </div>
-                    </div>
-                    <div className="flex flex-col justify-between px-3 py-2.5 flex-1 min-w-0">
-                      <div>
-                        <div className="flex items-start justify-between gap-1">
-                          <p className="text-[12px] font-bold text-[#1c1c1e] leading-tight truncate">{listing.name}</p>
-                          <button onClick={e => { e.stopPropagation(); toggleSaved(listing.id) }} className="flex-shrink-0 w-6 h-6 rounded-full bg-[#f5f4f0] flex items-center justify-center transition-colors hover:bg-[#ebe9e4]">
-                            <svg width="11" height="11" viewBox="0 0 24 24" fill={savedIds.has(listing.id) ? '#ef4444' : 'none'} stroke={savedIds.has(listing.id) ? '#ef4444' : '#6c6a66'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-                          </button>
-                        </div>
-                        <p className="text-[10px] text-[#9ca3af] truncate leading-tight mt-0.5">{listing.address}</p>
-                      </div>
-                      <div>
-                        <p className="text-[13px] font-black text-[#1c1c1e] leading-tight">${listing.price}<span className="text-[10px] font-normal text-[#9ca3af]">/month</span></p>
-                        <div className="flex items-center gap-2.5 mt-1">
-                          <span className="flex items-center gap-1 text-[9px] text-[#6c6a66]">
-                            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                            {listing.beds}
-                          </span>
-                          <span className="flex items-center gap-1 text-[9px] text-[#6c6a66]">
-                            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
-                            {listing.sqft}
-                          </span>
-                          {listing.floor && (
-                            <span className="flex items-center gap-1 text-[9px] text-[#6c6a66]">
-                              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-                              Fl {listing.floor}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </>
-            ) : (
-              /* ── SUBLEASE CARDS ───────────────────────────────── */
-              <>
-                {filteredSubleases.length === 0 && (
-                  <div className="flex flex-col items-center justify-center py-12 text-center">
-                    <div className="w-12 h-12 rounded-2xl bg-orange-50 flex items-center justify-center mb-3">
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f97316" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                    </div>
-                    <p className="text-[13px] font-semibold text-[#1c1c1e]">No subleases found</p>
-                    <p className="text-[11px] text-[#9ca3af] mt-1">Try adjusting your filters</p>
-                  </div>
-                )}
-                {filteredSubleases.map(s => (
-                  <div key={s.id} onClick={() => setHighlightPinId(s.id)} className="cursor-pointer flex flex-col bg-white rounded-2xl border border-[#e8e7e3] hover:border-[#c0bfbb] hover:shadow-md transition-all overflow-hidden group">
-                    {/* Top: image + info */}
-                    <div className="flex h-[96px]">
-                      <div className="relative w-[96px] flex-shrink-0 h-full">
-                        <img src={s.img} alt={s.name} className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500" />
-                        <div className="absolute top-2 left-2">
-                          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${s.badgeColor}`}>{s.badge}</span>
-                        </div>
-                      </div>
-                      <div className="flex flex-col justify-between px-3 py-2.5 flex-1 min-w-0">
-                        <div>
-                          <div className="flex items-start justify-between gap-1">
-                            <p className="text-[12px] font-bold text-[#1c1c1e] leading-tight truncate">{s.name}</p>
-                            <button onClick={e => { e.stopPropagation(); toggleSaved(s.id) }} className="flex-shrink-0 w-6 h-6 rounded-full bg-[#f5f4f0] flex items-center justify-center transition-colors hover:bg-[#ebe9e4]">
-                              <svg width="11" height="11" viewBox="0 0 24 24" fill={savedIds.has(s.id) ? '#ef4444' : 'none'} stroke={savedIds.has(s.id) ? '#ef4444' : '#6c6a66'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-                            </button>
-                          </div>
-                          <p className="text-[10px] text-[#9ca3af] truncate leading-tight mt-0.5">{s.address}</p>
-                        </div>
-                        <div>
-                          <p className="text-[13px] font-black text-[#1c1c1e] leading-tight">${s.price}<span className="text-[10px] font-normal text-[#9ca3af]">/month</span></p>
-                          <div className="flex items-center gap-2 mt-0.5">
-                            <span className="text-[9px] text-[#6c6a66]">{s.beds}</span>
-                            <span className="text-[9px] text-[#6c6a66]">·</span>
-                            <span className="text-[9px] text-[#6c6a66]">{s.sqft}</span>
-                            {s.furnished && <span className="text-[9px] bg-[#f5f4f0] text-[#6c6a66] font-semibold px-1.5 py-0.5 rounded-full">Furnished</span>}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Bottom: availability + poster */}
-                    <div className="border-t border-[#f0efeb] px-3 py-2 flex items-center justify-between">
-                      <div className="flex items-center gap-1.5">
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                        <span className="text-[10px] text-[#6c6a66] font-medium">{s.available}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {s.daysLeft <= 7 && (
-                          <span className="text-[9px] bg-[#1c1c1e] text-white font-bold px-1.5 py-0.5 rounded-full">{s.daysLeft}d left</span>
+                {/* Amenities */}
+                {(() => {
+                  const subAmenityOptions = [
+                    { key: 'furnished', label: 'Furnished' },
+                    { key: 'utilities', label: 'Utilities incl.' },
+                    { key: 'parking',   label: 'Parking' },
+                    { key: 'study',     label: 'Study room' },
+                    { key: 'common',    label: 'Common space' },
+                    { key: 'gym',       label: 'Gym' },
+                  ]
+                  return (
+                    <div>
+                      <button
+                        onClick={() => setSubAmenitiesOpen(o => !o)}
+                        className="flex items-center gap-1.5 text-sm font-bold text-[#1c1c1e] hover:opacity-70 transition-opacity mb-3 w-full text-left"
+                      >
+                        Amenities
+                        <svg width="12" height="12" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: subAmenitiesOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.15s ease' }}>
+                          <polyline points="2 3.5 5 6.5 8 3.5" />
+                        </svg>
+                        {subAmenities.size === 0 && !subAmenitiesOpen && (
+                          <span className="ml-auto text-[11px] font-normal text-[#9ca3af]">None selected</span>
                         )}
-                        <div className="flex items-center gap-1">
-                          <div className="w-4 h-4 rounded-full bg-[#e8e7e3] flex items-center justify-center text-[7px] font-bold text-[#6c6a66]">
-                            {s.postedBy[0]}
-                          </div>
-                          <span className="text-[9px] text-[#9ca3af]">{s.postedBy}</span>
+                        {subAmenities.size > 0 && !subAmenitiesOpen && (
+                          <span className="ml-auto text-[11px] font-semibold text-[#1c1c1e]">{subAmenities.size} selected</span>
+                        )}
+                      </button>
+                      {subAmenitiesOpen && (
+                        <div className="space-y-3">
+                          {subAmenityOptions.map(a => (
+                            <div key={a.key} className="flex items-center justify-between">
+                              <span className="text-[13px] text-[#1c1c1e]">{a.label}</span>
+                              <button onClick={() => setSubAmenities(prev => { const next = new Set(prev); next.has(a.key) ? next.delete(a.key) : next.add(a.key); return next })} className={`w-11 h-6 rounded-full relative transition-colors flex-shrink-0 ${subAmenities.has(a.key) ? 'bg-[#1c1c1e]' : 'bg-[#e5e4e0]'}`}>
+                                <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-transform ${subAmenities.has(a.key) ? 'translate-x-[22px]' : 'translate-x-0.5'}`} />
+                              </button>
+                            </div>
+                          ))}
                         </div>
-                      </div>
+                      )}
                     </div>
-                  </div>
-                ))}
+                  )
+                })()}
               </>
             )}
           </div>
-          </div>{/* end fixed bottom section */}
         </>}
       </div>
 
@@ -942,6 +924,8 @@ export default function WebExploreScreen({ onViewListing: _onViewListing, onNavi
             setMessageTarget(pin)
           }}
           filteredIds={mode === 'rent' ? filtered.map(l => l.id) : undefined}
+          savedIds={savedIds}
+          onToggleSave={onToggleSave}
           onViewSubleaseDetail={(id) => setLocalSubleaseId(id)}
           onPinSelect={(id) => {
             if (id) window.location.hash = mode === 'sublease' ? `explore/sublease/${id}` : `explore/${id}`;

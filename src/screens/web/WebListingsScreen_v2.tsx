@@ -3,18 +3,16 @@ import { listings } from '../../data/listings'
 
 // ── Sublease data (inline) ────────────────────────────────────────────────────
 const subleases = [
-  { id: 1, name: 'Studio on Green St', price: 680, period: 'Summer', verified: true, beds: 'Studio', sqft: '420 sqft', img: listings[1].img, address: '302 E Green St', walkMins: 7, amenities: ['Furnished', 'Utilities incl.', 'Parking'], available: 'May 15 – Aug 15', postedBy: 'Emma W.', desc: 'Going home for the summer and subleasing my studio. Fully furnished, utilities included. Walk to campus in under 10 minutes. Everything you need is already there.' },
-  { id: 2, name: '1BR near Grainger', price: 790, period: 'Spring', verified: true, beds: '1B1B', sqft: '560 sqft', img: listings[2].img, address: '512 E Green St', walkMins: 9, amenities: ['In-unit laundry', 'AC', 'Internet incl.'], available: 'Jan 1 – May 10', postedBy: 'Marcus T.', desc: 'Study abroad for spring semester. Clean 1BR with in-unit laundry and fast internet. Great natural light and quiet building near engineering campus.' },
-  { id: 3, name: '2BR Chalmers', price: 950, period: 'Fall', verified: false, beds: '2B2B', sqft: '820 sqft', img: listings[5].img, address: '502 W Chalmers St', walkMins: 5, amenities: ['Furnished', 'Balcony', 'Gym access'], available: 'Aug 20 – Dec 20', postedBy: 'Jordan L.', desc: 'Graduating early and looking for someone to take over. Spacious 2BR with balcony and gym. Could split with a friend. Building has rooftop access.' },
-  { id: 4, name: 'Cozy Studio near BIF', price: 720, period: 'Summer', verified: true, beds: 'Studio', sqft: '390 sqft', img: listings[3].img, address: '409 E Chalmers St', walkMins: 6, amenities: ['Furnished', 'Near bus stop'], available: 'May 10 – Aug 10', postedBy: 'Priya K.', desc: 'Internship in Chicago — subleasing my cozy furnished studio near BIF. MTD stop right outside. Super convenient for anyone on campus daily.' },
-  { id: 5, name: '1BR Springfield Ave', price: 760, period: 'Spring', verified: false, beds: '1B1B', sqft: '610 sqft', img: listings[6].img, address: '114 W Springfield Ave', walkMins: 8, amenities: ['Updated kitchen', 'Parking', 'Courtyard'], available: 'Jan 5 – Apr 30', postedBy: 'Tyler B.', desc: 'Transferring for spring. Nice 1BR with updated kitchen and a courtyard. Parking spot included. Quiet street, great for grad students.' },
-  { id: 6, name: '2BR Orchard Downs', price: 880, period: 'Fall', verified: true, beds: '2B1B', sqft: '750 sqft', img: listings[7].img, address: '2002 Orchard Downs Dr', walkMins: 12, amenities: ['Private yard', 'Parking', 'AC'], available: 'Aug 15 – Dec 15', postedBy: 'Sam P.', desc: 'Leaving for a semester abroad. Spacious 2BR near ACES, private yard and parking. Great for two roommates splitting rent.' },
+  { id: 1, name: 'Studio on Green St', price: 680, period: 'Summer', verified: true, beds: 'Studio', sqft: '420 sqft', img: listings[1].img, address: '302 E Green St', walkMins: 7, amenities: ['Furnished', 'Utilities incl.', 'Parking', 'Study room', 'Common space'], available: 'May 15 – Aug 15', postedBy: 'Emma W.', desc: 'Going home for the summer and subleasing my studio. Fully furnished, utilities included. Walk to campus in under 10 minutes. Everything you need is already there.' },
+  { id: 2, name: '1BR near Grainger', price: 790, period: 'Spring', verified: true, beds: '1B1B', sqft: '560 sqft', img: listings[2].img, address: '512 E Green St', walkMins: 9, amenities: ['In-unit laundry', 'AC', 'Internet incl.', 'Study room', 'Gym'], available: 'Jan 1 – May 10', postedBy: 'Marcus T.', desc: 'Study abroad for spring semester. Clean 1BR with in-unit laundry and fast internet. Great natural light and quiet building near engineering campus.' },
+  { id: 3, name: '2BR Chalmers', price: 950, period: 'Fall', verified: false, beds: '2B2B', sqft: '820 sqft', img: listings[5].img, address: '502 W Chalmers St', walkMins: 5, amenities: ['Furnished', 'Balcony', 'Gym access', 'Common space', 'Parking'], available: 'Aug 20 – Dec 20', postedBy: 'Jordan L.', desc: 'Graduating early and looking for someone to take over. Spacious 2BR with balcony and gym. Could split with a friend. Building has rooftop access.' },
+  { id: 4, name: 'Cozy Studio near BIF', price: 720, period: 'Summer', verified: true, beds: 'Studio', sqft: '390 sqft', img: listings[3].img, address: '409 E Chalmers St', walkMins: 6, amenities: ['Furnished', 'Near bus stop', 'Study room'], available: 'May 10 – Aug 10', postedBy: 'Priya K.', desc: 'Internship in Chicago — subleasing my cozy furnished studio near BIF. MTD stop right outside. Super convenient for anyone on campus daily.' },
+  { id: 5, name: '1BR Springfield Ave', price: 760, period: 'Spring', verified: false, beds: '1B1B', sqft: '610 sqft', img: listings[6].img, address: '114 W Springfield Ave', walkMins: 8, amenities: ['Updated kitchen', 'Parking', 'Courtyard', 'Common space'], available: 'Jan 5 – Apr 30', postedBy: 'Tyler B.', desc: 'Transferring for spring. Nice 1BR with updated kitchen and a courtyard. Parking spot included. Quiet street, great for grad students.' },
+  { id: 6, name: '2BR Orchard Downs', price: 880, period: 'Fall', verified: true, beds: '2B1B', sqft: '750 sqft', img: listings[7].img, address: '2002 Orchard Downs Dr', walkMins: 12, amenities: ['Private yard', 'Parking', 'AC', 'Gym', 'Common space'], available: 'Aug 15 – Dec 15', postedBy: 'Sam P.', desc: 'Leaving for a semester abroad. Spacious 2BR near ACES, private yard and parking. Great for two roommates splitting rent.' },
 ]
 const subleaseToMapId: Record<number, number> = { 1: 101, 2: 102, 3: 103, 4: 104, 5: 105, 6: 101 }
 
 const sortOptions    = ['Best Match', 'Price: Low', 'Price: High']
-const roomTypes      = ['All', 'Studio', '1B1B', '2B1B', '2B2B']
-const subSortOptions = ['Nearest first', 'Price: Low', 'Price: High']
 
 // ── Synced with Explore Map ───────────────────────────────────────────────────
 const placeTypes = [
@@ -35,7 +33,10 @@ const areaOptions    = [
 const amenityOptions = [
   { key: 'laundry', label: 'In-unit laundry' },
   { key: 'pet',     label: 'Pets allowed' },
-  { key: 'parking', label: 'Parking slot' },
+  { key: 'parking', label: 'Parking' },
+  { key: 'study',   label: 'Study room' },
+  { key: 'common',  label: 'Common space' },
+  { key: 'gym',     label: 'Gym' },
 ]
 const availableOptions = ['Any', 'Jul 2026', 'Aug 2026']
 const walkOptions: { label: string; max: number }[] = [{ label: 'Any', max: Infinity }, { label: '≤5 min', max: 5 }, { label: '≤10 min', max: 10 }, { label: '≤15 min', max: 15 }]
@@ -73,6 +74,7 @@ export default function WebListingsScreen({ onViewListing, savedIds: savedIdsPro
   const minDebounce = useRef<ReturnType<typeof setTimeout> | null>(null)
   const maxDebounce = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [amenities,    setAmenities]    = useState<Set<string>>(new Set())
+  const [amenitiesOpen, setAmenitiesOpen] = useState(false)
   const [activeAvailable, setActiveAvailable] = useState('Any')
   const [activeWalk,   setActiveWalk]   = useState('Any')
   const [walkTo,       setWalkTo]       = useState('any')
@@ -86,7 +88,20 @@ export default function WebListingsScreen({ onViewListing, savedIds: savedIdsPro
 
   // ── sublease state ──
   const [activeRoomType, setActiveRoomType] = useState('All')
-  const [subSortBy,    setSubSortBy]        = useState('Nearest first')
+  const [subSortBy] = useState('Nearest first')
+  const [subPriceMin,  setSubPriceMin]      = useState(500)
+  const [subPriceMax,  setSubPriceMax]      = useState(1200)
+  const [subMinInput,  setSubMinInput]      = useState('500')
+  const [subMaxInput,  setSubMaxInput]      = useState('1200')
+  const subMinDebounce = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const subMaxDebounce = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [activePeriod, setActivePeriod]     = useState('All')
+  const [subAmenities, setSubAmenities]     = useState<Set<string>>(new Set())
+  const [subAmenitiesOpen, setSubAmenitiesOpen] = useState(false)
+  const [subSelectedArea, setSubSelectedArea] = useState('')
+  const [subActiveWalk, setSubActiveWalk]   = useState('Any')
+  const [subWalkTo,    setSubWalkTo]        = useState('any')
+  const [subVerifiedOnly, setSubVerifiedOnly] = useState(false)
   const [subSavedIds,  setSubSavedIds]      = useState<Set<number>>(new Set())
   const [selected,     setSelected]         = useState<typeof subleases[0] | null>(null)
   const [detailTab,    setDetailTab]        = useState<'overview' | 'amenities' | 'contact'>('overview')
@@ -95,6 +110,7 @@ export default function WebListingsScreen({ onViewListing, savedIds: savedIdsPro
   const [messageSent,  setMessageSent]      = useState(false)
   const [interestSent, setInterestSent]     = useState(false)
   const [showPost,     setShowPost]         = useState(false)
+  const [showSubFilters, setShowSubFilters] = useState(false)
   const [postSuccess,  setPostSuccess]      = useState(false)
   const [toast,        setToast]            = useState<string | null>(null)
 
@@ -113,7 +129,6 @@ export default function WebListingsScreen({ onViewListing, savedIds: savedIdsPro
   const sendMessage = () => {
     if (!messageText.trim()) return
     setMessageSent(true)
-    setTimeout(() => { setShowMessage(false); setMessageSent(false); setMessageText(''); onNavigate?.('messages') }, 1200)
   }
   const expressInterest = () => {
     setInterestSent(true)
@@ -141,7 +156,10 @@ export default function WebListingsScreen({ onViewListing, savedIds: savedIdsPro
       if (k === 'laundry') return l.amenities.some(a => a.toLowerCase().includes('laundry'))
       if (k === 'pet')     return l.amenities.some(a => a.toLowerCase().includes('pet'))
       if (k === 'parking') return l.amenities.some(a => a.toLowerCase().includes('parking'))
-      return true
+      if (k === 'study')   return l.amenities.some(a => a.toLowerCase().includes('study'))
+      if (k === 'common')  return l.amenities.some(a => a.toLowerCase().includes('common'))
+      if (k === 'gym')     return l.amenities.some(a => a.toLowerCase().includes('gym'))
+      return false
     })
     const matchesAvailable = activeAvailable === 'Any' || l.available.includes(activeAvailable)
     const walkMins = walkTo === 'any' ? Math.min(...Object.values(l.walkFrom)) : (l.walkFrom[walkTo as keyof typeof l.walkFrom] ?? 99)
@@ -154,14 +172,39 @@ export default function WebListingsScreen({ onViewListing, savedIds: savedIdsPro
   })
   const sortedRent = [...filteredRent].sort((a, b) => sortBy === 'Price: Low' ? a.price - b.price : sortBy === 'Price: High' ? b.price - a.price : 0)
 
+  // ── sublease area options ──
+  const subAreaOptions = [
+    { id: 'green',    label: 'Green Street',  emoji: '🏙️' },
+    { id: 'chalmers', label: 'Chalmers',      emoji: '🌆' },
+    { id: 'springfield', label: 'Springfield', emoji: '🏘️' },
+    { id: 'orchard',  label: 'Orchard Downs', emoji: '🌿' },
+  ]
+  const subAreaKeywords: Record<string, string> = { green: 'green', chalmers: 'chalmers', springfield: 'springfield', orchard: 'orchard' }
+
   // ── sublease filtering + sorting ──
+  const subWalkMax = subActiveWalk === '≤5 min' ? 5 : subActiveWalk === '≤10 min' ? 10 : subActiveWalk === '≤15 min' ? 15 : Infinity
   const filteredSub = subleases
-    .filter(s => activeRoomType === 'All' || s.beds === activeRoomType)
+    .filter(s =>
+      (activeRoomType === 'All' || s.beds === activeRoomType) &&
+      s.price >= subPriceMin && s.price <= subPriceMax &&
+      (activePeriod === 'All' || s.period === activePeriod) &&
+      (!subSelectedArea || s.address.toLowerCase().includes(subAreaKeywords[subSelectedArea] ?? '')) &&
+      (subAmenities.size === 0 || [...subAmenities].every(k => s.amenities.some(a => a.toLowerCase().includes(k)))) &&
+      s.walkMins <= subWalkMax &&
+      (!subVerifiedOnly || s.verified)
+    )
     .sort((a, b) =>
       subSortBy === 'Price: Low'  ? a.price - b.price :
       subSortBy === 'Price: High' ? b.price - a.price :
       a.walkMins - b.walkMins
     )
+  const clearSubFilters = () => {
+    setActiveRoomType('All'); setSubPriceMin(500); setSubPriceMax(1200)
+    setSubMinInput('500'); setSubMaxInput('1200'); setActivePeriod('All')
+    setSubSelectedArea(''); setSubAmenities(new Set())
+    setSubActiveWalk('Any'); setSubWalkTo('any'); setSubVerifiedOnly(false)
+  }
+  const subFilterCount = (activeRoomType !== 'All' ? 1 : 0) + (subPriceMin !== 500 || subPriceMax !== 1200 ? 1 : 0) + (activePeriod !== 'All' ? 1 : 0) + (subSelectedArea ? 1 : 0) + subAmenities.size + (subActiveWalk !== 'Any' ? 1 : 0) + (subVerifiedOnly ? 1 : 0)
 
   // ── Sublease detail view ──────────────────────────────────────────────────
   if (selected) {
@@ -175,7 +218,7 @@ export default function WebListingsScreen({ onViewListing, savedIds: savedIdsPro
               <img src={selected.img} alt={selected.name} className="w-full h-full object-cover" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
               <div className="absolute top-4 left-5 right-5 z-20 flex items-center justify-between">
-                <button onClick={() => setSelected(null)} className="flex items-center gap-2 bg-white/90 backdrop-blur-sm rounded-xl px-3 py-2 text-[13px] font-semibold text-[#1c1c1e] shadow-sm hover:bg-white transition-colors">
+                <button onClick={() => { setSelected(null); window.location.hash = 'listings/sublease' }} className="flex items-center gap-2 bg-white/90 backdrop-blur-sm rounded-xl px-3 py-2 text-[13px] font-semibold text-[#1c1c1e] shadow-sm hover:bg-white transition-colors">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
                   Back
                 </button>
@@ -230,7 +273,7 @@ export default function WebListingsScreen({ onViewListing, savedIds: savedIdsPro
               </div>
               <div className="flex border-b border-[#f0efeb] gap-5">
                 {(['overview', 'amenities', 'contact'] as const).map(tab => (
-                  <button key={tab} onClick={() => setDetailTab(tab)} className={`py-2.5 text-[13px] font-semibold whitespace-nowrap border-b-2 -mb-px transition-all capitalize ${detailTab === tab ? 'border-[#1c1c1e] text-[#1c1c1e]' : 'border-transparent text-[#9ca3af] hover:text-[#1c1c1e]'}`}>
+                  <button key={tab} onClick={() => { setDetailTab(tab); window.location.hash = `listings/sublease/${selected?.id}/${tab}` }} className={`py-2.5 text-[13px] font-semibold whitespace-nowrap border-b-2 -mb-px transition-all capitalize ${detailTab === tab ? 'border-[#1c1c1e] text-[#1c1c1e]' : 'border-transparent text-[#9ca3af] hover:text-[#1c1c1e]'}`}>
                     {tab === 'overview' ? 'Overview' : tab === 'amenities' ? 'Amenities' : 'Contact'}
                   </button>
                 ))}
@@ -316,12 +359,20 @@ export default function WebListingsScreen({ onViewListing, savedIds: savedIdsPro
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center" onClick={() => !messageSent && setShowMessage(false)}>
             <div className="bg-white rounded-2xl w-full max-w-md mx-6 overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
               {messageSent ? (
-                <div className="p-8 text-center">
-                  <div className="w-14 h-14 rounded-2xl bg-[#f5f4f0] flex items-center justify-center mx-auto mb-4">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1c1c1e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                <div className="text-center py-4 px-6 space-y-4">
+                  <div className="w-12 h-12 rounded-full bg-[#f5f4f0] flex items-center justify-center mx-auto">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1c1c1e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                   </div>
                   <p className="text-[15px] font-bold text-[#1c1c1e]">Message sent!</p>
-                  <p className="text-[13px] text-[#6c6a66] mt-1">Redirecting to Messages…</p>
+                  <p className="text-[13px] text-[#6c6a66]">{selected?.postedBy.split(' ')[0]} will get back to you soon.</p>
+                  <div className="flex flex-col gap-2 pt-2 pb-2">
+                    <button onClick={() => { setSelected(null); window.location.hash = 'messages'; onNavigate?.('messages') }} className="w-full py-2.5 bg-[#1c1c1e] text-white text-[13px] font-semibold rounded-xl hover:bg-[#333] transition-colors">
+                      View in Messages
+                    </button>
+                    <button onClick={() => { setMessageSent(false); setMessageText(''); setShowMessage(false) }} className="w-full py-2.5 bg-[#f5f4f0] text-[#1c1c1e] text-[13px] font-semibold rounded-xl hover:bg-[#e5e4e0] transition-colors">
+                      Back to listing
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <>
@@ -375,7 +426,7 @@ export default function WebListingsScreen({ onViewListing, savedIds: savedIdsPro
                 {(['rent', 'sublease'] as const).map(m => (
                   <button
                     key={m}
-                    onClick={() => setMode(m)}
+                    onClick={() => { setMode(m); setShowFilters(false); setShowSubFilters(false); window.location.hash = m === 'sublease' ? 'listings/sublease' : 'listings'; }}
                     className={`px-4 py-1.5 rounded-lg text-[13px] font-semibold transition-all ${mode === m ? 'bg-white text-[#1c1c1e] shadow-sm' : 'text-[#6c6a66] hover:text-[#1c1c1e]'}`}
                   >
                     {m === 'rent' ? 'Rent' : 'Sublease'}
@@ -404,6 +455,15 @@ export default function WebListingsScreen({ onViewListing, savedIds: savedIdsPro
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
                   Filters
                   {activeFilterCount > 0 && <span className={`w-4 h-4 rounded-full text-[10px] font-bold flex items-center justify-center ${showFilters || activeFilterCount > 0 ? 'bg-white text-[#1c1c1e]' : 'bg-[#1c1c1e] text-white'}`}>{activeFilterCount}</span>}
+                </button>
+              )}
+
+              {/* Filter toggle (sublease) */}
+              {mode === 'sublease' && (
+                <button onClick={() => setShowSubFilters(s => { const next = !s; window.location.hash = next ? 'listings/sublease/filter' : 'listings/sublease'; return next; })} className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-semibold transition-all border ${showSubFilters || subFilterCount > 0 ? 'bg-[#1c1c1e] text-white border-[#1c1c1e]' : 'bg-white text-[#1c1c1e] border-[#e5e4e0] hover:border-[#1c1c1e]'}`}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+                  Filters
+                  {subFilterCount > 0 && <span className={`w-4 h-4 rounded-full text-[10px] font-bold flex items-center justify-center ${showSubFilters || subFilterCount > 0 ? 'bg-white text-[#1c1c1e]' : 'bg-[#1c1c1e] text-white'}`}>{subFilterCount}</span>}
                 </button>
               )}
 
@@ -533,16 +593,32 @@ export default function WebListingsScreen({ onViewListing, savedIds: savedIdsPro
 
               {/* Amenities */}
               <div className="flex items-start gap-3">
-                <span className="text-[12px] font-semibold text-[#6c6a66] w-16 flex-shrink-0 mt-1">Amenities</span>
-                <div className="flex-1 space-y-3">
-                  {amenityOptions.map(a => (
-                    <div key={a.key} className="flex items-center justify-between">
-                      <span className="text-[13px] text-[#1c1c1e]">{a.label}</span>
-                      <button onClick={() => toggleAmenity(a.key)} className={`w-11 h-6 rounded-full relative transition-colors flex-shrink-0 ${amenities.has(a.key) ? 'bg-[#1c1c1e]' : 'bg-[#e5e4e0]'}`}>
-                        <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-transform ${amenities.has(a.key) ? 'translate-x-[22px]' : 'translate-x-0.5'}`} />
-                      </button>
+                <button
+                  onClick={() => setAmenitiesOpen(o => !o)}
+                  className="text-[12px] font-semibold text-[#6c6a66] w-16 flex-shrink-0 mt-1 flex items-center gap-1 hover:text-[#1c1c1e] transition-colors text-left"
+                >
+                  Amenities
+                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ transform: amenitiesOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.15s ease', flexShrink: 0 }}>
+                    <polyline points="2 3.5 5 6.5 8 3.5" />
+                  </svg>
+                </button>
+                <div className="flex-1">
+                  {amenitiesOpen ? (
+                    <div className="space-y-3">
+                      {amenityOptions.map(a => (
+                        <div key={a.key} className="flex items-center justify-between">
+                          <span className="text-[13px] text-[#1c1c1e]">{a.label}</span>
+                          <button onClick={() => toggleAmenity(a.key)} className={`w-11 h-6 rounded-full relative transition-colors flex-shrink-0 ${amenities.has(a.key) ? 'bg-[#1c1c1e]' : 'bg-[#e5e4e0]'}`}>
+                            <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-transform ${amenities.has(a.key) ? 'translate-x-[22px]' : 'translate-x-0.5'}`} />
+                          </button>
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                  ) : (
+                    <span className="text-[13px] text-[#9ca3af] mt-1 block">
+                      {amenities.size > 0 ? [...amenities].map(k => amenityOptions.find(o => o.key === k)?.label).filter(Boolean).join(', ') : 'None selected'}
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -601,16 +677,153 @@ export default function WebListingsScreen({ onViewListing, savedIds: savedIdsPro
             </div>
           )}
 
-          {/* Sublease filter row */}
-          {mode === 'sublease' && (
-            <div className="flex items-center gap-2 mt-4">
-              {roomTypes.map(r => (
-                <button key={r} onClick={() => setActiveRoomType(r)} className={`px-4 py-1.5 rounded-xl text-[13px] font-semibold transition-all ${activeRoomType === r ? 'bg-[#1c1c1e] text-white' : 'bg-[#f5f4f0] text-[#6c6a66] hover:bg-[#e5e4e0] hover:text-[#1c1c1e]'}`}>{r}</button>
-              ))}
-              <div className="ml-auto flex items-center gap-2">
-                <select value={subSortBy} onChange={e => setSubSortBy(e.target.value)} className="text-[13px] border border-[#e5e4e0] rounded-xl px-3 py-1.5 text-[#1c1c1e] bg-white outline-none cursor-pointer">
-                  {subSortOptions.map(o => <option key={o}>{o}</option>)}
-                </select>
+          {/* Sublease filter panel — mirrors Rent layout exactly */}
+          {mode === 'sublease' && showSubFilters && (
+            <div className="mt-4 p-4 bg-[#f9f8f6] rounded-2xl border border-[#eeecea] space-y-4">
+
+              {/* Beds */}
+              <div className="flex items-center gap-3">
+                <span className="text-[12px] font-semibold text-[#6c6a66] w-16 flex-shrink-0">Beds</span>
+                <div className="flex gap-2 flex-wrap">
+                  {(['All', 'Studio', '1B1B', '2B1B', '2B2B'] as const).map(r => (
+                    <button key={r} onClick={() => setActiveRoomType(r)} className={`px-3.5 py-1.5 rounded-xl text-[13px] font-semibold transition-all ${activeRoomType === r ? 'bg-[#1c1c1e] text-white' : 'bg-white text-[#6c6a66] border border-[#e5e4e0] hover:border-[#1c1c1e] hover:text-[#1c1c1e]'}`}>{r}</button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Price */}
+              <div className="flex items-center gap-3">
+                <span className="text-[12px] font-semibold text-[#6c6a66] w-16 flex-shrink-0">Price</span>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <div className="flex items-center gap-1.5 bg-white border border-[#e5e4e0] rounded-xl px-3 py-2 focus-within:border-[#1c1c1e] transition-colors w-28">
+                    <span className="text-[12px] text-[#9ca3af]">$</span>
+                    <input type="number" value={subMinInput} min={400} max={subPriceMax - 50} step={50}
+                      onChange={e => { setSubMinInput(e.target.value); if (subMinDebounce.current) clearTimeout(subMinDebounce.current); subMinDebounce.current = setTimeout(() => { const v = Math.min(Math.max(parseInt(e.target.value) || 400, 400), subPriceMax - 50); setSubPriceMin(v); setSubMinInput(String(v)) }, 350) }}
+                      onBlur={() => { if (subMinDebounce.current) clearTimeout(subMinDebounce.current); const v = Math.min(Math.max(parseInt(subMinInput) || 400, 400), subPriceMax - 50); setSubPriceMin(v); setSubMinInput(String(v)) }}
+                      className="flex-1 text-[13px] text-[#1c1c1e] bg-transparent outline-none w-16" />
+                  </div>
+                  <span className="text-[12px] text-[#9ca3af]">–</span>
+                  <div className="flex items-center gap-1.5 bg-white border border-[#e5e4e0] rounded-xl px-3 py-2 focus-within:border-[#1c1c1e] transition-colors w-28">
+                    <span className="text-[12px] text-[#9ca3af]">$</span>
+                    <input type="number" value={subMaxInput} min={subPriceMin + 50} max={2000} step={50}
+                      onChange={e => { setSubMaxInput(e.target.value); if (subMaxDebounce.current) clearTimeout(subMaxDebounce.current); subMaxDebounce.current = setTimeout(() => { const v = Math.max(Math.min(parseInt(e.target.value) || 1200, 2000), subPriceMin + 50); setSubPriceMax(v); setSubMaxInput(String(v)) }, 350) }}
+                      onBlur={() => { if (subMaxDebounce.current) clearTimeout(subMaxDebounce.current); const v = Math.max(Math.min(parseInt(subMaxInput) || 1200, 2000), subPriceMin + 50); setSubPriceMax(v); setSubMaxInput(String(v)) }}
+                      className="flex-1 text-[13px] text-[#1c1c1e] bg-transparent outline-none w-16" />
+                  </div>
+                  <span className="text-[12px] text-[#9ca3af]">/ mo</span>
+                  <div className="flex gap-1.5">
+                    {[700, 800, 900, 1000].map(c => (
+                      <button key={c} onClick={() => { setSubPriceMin(400); setSubPriceMax(c); setSubMinInput('400'); setSubMaxInput(String(c)) }} className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all ${subPriceMin === 400 && subPriceMax === c ? 'bg-[#1c1c1e] text-white' : 'bg-white text-[#6c6a66] border border-[#e5e4e0] hover:border-[#1c1c1e]'}`}>≤${c}</button>
+                    ))}
+                  </div>
+                  <span className="text-[11px] text-[#9ca3af]">→ <span className="font-semibold text-[#1c1c1e]">{filteredSub.length}</span> listing{filteredSub.length !== 1 ? 's' : ''} match</span>
+                </div>
+              </div>
+
+              {/* Area */}
+              <div className="flex items-center gap-3">
+                <span className="text-[12px] font-semibold text-[#6c6a66] w-16 flex-shrink-0">Area</span>
+                <div className="flex gap-2 flex-wrap">
+                  {subAreaOptions.map(a => (
+                    <button key={a.id} onClick={() => setSubSelectedArea(subSelectedArea === a.id ? '' : a.id)} className={`flex items-center gap-1 px-3.5 py-1.5 rounded-xl text-[13px] font-semibold transition-all ${subSelectedArea === a.id ? 'bg-[#1c1c1e] text-white' : 'bg-white text-[#6c6a66] border border-[#e5e4e0] hover:border-[#1c1c1e] hover:text-[#1c1c1e]'}`}>
+                      <span>{a.emoji}</span>{a.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Amenities */}
+              {(() => {
+                const subAmenityOptions = [
+                  { key: 'furnished', label: 'Furnished' },
+                  { key: 'utilities', label: 'Utilities incl.' },
+                  { key: 'parking',   label: 'Parking' },
+                  { key: 'study',     label: 'Study room' },
+                  { key: 'common',    label: 'Common space' },
+                  { key: 'gym',       label: 'Gym' },
+                ]
+                return (
+                  <div className="flex items-start gap-3">
+                    <button
+                      onClick={() => setSubAmenitiesOpen(o => !o)}
+                      className="text-[12px] font-semibold text-[#6c6a66] w-16 flex-shrink-0 mt-1 flex items-center gap-1 hover:text-[#1c1c1e] transition-colors text-left"
+                    >
+                      Amenities
+                      <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ transform: subAmenitiesOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.15s ease', flexShrink: 0 }}>
+                        <polyline points="2 3.5 5 6.5 8 3.5" />
+                      </svg>
+                    </button>
+                    <div className="flex-1">
+                      {subAmenitiesOpen ? (
+                        <div className="space-y-3">
+                          {subAmenityOptions.map(a => (
+                            <div key={a.key} className="flex items-center justify-between">
+                              <span className="text-[13px] text-[#1c1c1e]">{a.label}</span>
+                              <button onClick={() => setSubAmenities(prev => { const next = new Set(prev); next.has(a.key) ? next.delete(a.key) : next.add(a.key); return next })} className={`w-11 h-6 rounded-full relative transition-colors flex-shrink-0 ${subAmenities.has(a.key) ? 'bg-[#1c1c1e]' : 'bg-[#e5e4e0]'}`}>
+                                <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-transform ${subAmenities.has(a.key) ? 'translate-x-[22px]' : 'translate-x-0.5'}`} />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-[13px] text-[#9ca3af] mt-1 block">
+                          {subAmenities.size > 0 ? [...subAmenities].map(k => subAmenityOptions.find(o => o.key === k)?.label).filter(Boolean).join(', ') : 'None selected'}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )
+              })()}
+
+              {/* Move-in period */}
+              <div className="flex items-center gap-3">
+                <span className="text-[12px] font-semibold text-[#6c6a66] w-16 flex-shrink-0">Period</span>
+                <div className="flex gap-2 flex-wrap">
+                  {['All', 'Summer', 'Spring', 'Fall'].map(p => (
+                    <button key={p} onClick={() => setActivePeriod(p)} className={`px-3.5 py-1.5 rounded-xl text-[13px] font-semibold transition-all ${activePeriod === p ? 'bg-[#1c1c1e] text-white' : 'bg-white text-[#6c6a66] border border-[#e5e4e0] hover:border-[#1c1c1e] hover:text-[#1c1c1e]'}`}>{p}</button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Walk to campus */}
+              <div className="flex items-start gap-3">
+                <span className="text-[12px] font-semibold text-[#6c6a66] w-16 flex-shrink-0 mt-1.5">Walk</span>
+                <div className="flex-1 space-y-2">
+                  <div className="flex gap-2 flex-wrap">
+                    {campusDestOptions.map(d => (
+                      <button key={d.key} onClick={() => setSubWalkTo(d.key)} className={`flex items-center gap-1 px-3 py-1.5 rounded-xl text-[12px] font-semibold transition-all ${subWalkTo === d.key ? 'bg-[#1c1c1e] text-white' : 'bg-white text-[#6c6a66] border border-[#e5e4e0] hover:border-[#1c1c1e] hover:text-[#1c1c1e]'}`}>
+                        <span>{d.emoji}</span>{d.label}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {walkOptions.map(w => (
+                      <button key={w.label} onClick={() => setSubActiveWalk(w.label)} className={`px-3.5 py-1.5 rounded-xl text-[13px] font-semibold transition-all ${subActiveWalk === w.label ? 'bg-[#1c1c1e] text-white' : 'bg-white text-[#6c6a66] border border-[#e5e4e0] hover:border-[#1c1c1e] hover:text-[#1c1c1e]'}`}>{w.label}</button>
+                    ))}
+                    {subWalkTo !== 'any' && (
+                      <span className="text-[11px] text-[#9ca3af] ml-1">to {campusDestOptions.find(d => d.key === subWalkTo)?.label}</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Verified toggle */}
+              <div className="flex items-center justify-between bg-white border border-[#e5e4e0] rounded-xl px-4 py-3">
+                <div>
+                  <p className="text-[13px] font-semibold text-[#1c1c1e]">Verified listings only</p>
+                  <p className="text-[11px] text-[#9ca3af] mt-0.5">Show only verified subleases</p>
+                </div>
+                <button onClick={() => setSubVerifiedOnly(v => !v)} className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${subVerifiedOnly ? 'bg-[#1c1c1e]' : 'bg-[#e5e4e0]'}`}>
+                  <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${subVerifiedOnly ? 'translate-x-5' : 'translate-x-0.5'}`} />
+                </button>
+              </div>
+
+              {/* Footer */}
+              <div className="flex items-center justify-between pt-2 border-t border-[#eeecea]">
+                <button onClick={clearSubFilters} className="text-[13px] text-[#9ca3af] hover:text-[#1c1c1e] transition-colors">Clear all</button>
+                <button onClick={() => { setShowSubFilters(false); window.location.hash = 'listings/sublease'; }} className="px-5 py-2 bg-[#1c1c1e] text-white text-[13px] font-semibold rounded-xl hover:bg-[#333] transition-colors">
+                  Show {filteredSub.length} result{filteredSub.length !== 1 ? 's' : ''}
+                </button>
               </div>
             </div>
           )}
@@ -674,8 +887,17 @@ export default function WebListingsScreen({ onViewListing, savedIds: savedIdsPro
         ) : (
           // ── Sublease grid ──
           <div className="grid grid-cols-3 gap-5">
+            {filteredSub.length === 0 && (
+              <div className="col-span-3 flex flex-col items-center justify-center py-20 text-center">
+                <div className="w-14 h-14 rounded-2xl bg-[#f5f4f0] flex items-center justify-center mb-4">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                </div>
+                <p className="text-[15px] font-bold text-[#1c1c1e] mb-1">No subleases found</p>
+                <p className="text-[13px] text-[#9ca3af]">Try adjusting your filters</p>
+              </div>
+            )}
             {filteredSub.map(s => (
-              <div key={s.id} onClick={() => { setSelected(s); setDetailTab('overview') }} className="bg-white rounded-2xl overflow-hidden cursor-pointer group hover:shadow-md transition-all duration-200">
+              <div key={s.id} onClick={() => { setSelected(s); setDetailTab('overview'); window.location.hash = `listings/sublease/${s.id}` }} className="bg-white rounded-2xl overflow-hidden cursor-pointer group hover:shadow-md transition-all duration-200">
                 <div className="relative h-44 overflow-hidden flex-shrink-0">
                   <img src={s.img} alt={s.name} className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />

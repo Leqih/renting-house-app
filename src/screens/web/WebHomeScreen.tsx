@@ -1,6 +1,22 @@
 import { useState, useEffect } from 'react'
 import { listings } from '../../data/listings'
 
+function getGreeting() {
+  const h = new Date().getHours()
+  if (h < 12) return 'Good morning'
+  if (h < 17) return 'Good afternoon'
+  return 'Good evening'
+}
+
+function getSemester() {
+  const now = new Date()
+  const m = now.getMonth() + 1 // 1–12
+  const y = now.getFullYear()
+  if (m >= 8 && m <= 12) return `Fall ${y}`
+  if (m >= 1 && m <= 5) return `Spring ${y}`
+  return `Summer ${y}`
+}
+
 interface Props {
   onNavigate: (tab: string) => void
   onViewListing: (id: number) => void
@@ -176,9 +192,9 @@ export default function WebHomeScreen({ onNavigate, onViewListing }: Props) {
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center gap-2 mb-0.5">
-                <span className="text-[11px] font-semibold text-[#9ca3af] uppercase tracking-widest">UIUC · Spring 2026</span>
+                <span className="text-[11px] font-semibold text-[#9ca3af] uppercase tracking-widest">UIUC · {getSemester()}</span>
               </div>
-              <h1 className="text-2xl font-bold text-[#1c1c1e] tracking-tight">Good morning, LQ</h1>
+              <h1 className="text-2xl font-bold text-[#1c1c1e] tracking-tight">{getGreeting()}, LQ</h1>
               <p className="text-sm text-[#6c6a66] mt-0.5">You have 2 upcoming tours and 1 pending application</p>
             </div>
             <div className="flex items-center gap-2.5">

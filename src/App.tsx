@@ -14,22 +14,27 @@ import WebCommunityScreen from './screens/web/WebCommunityScreen';
 import WebMessagesScreen from './screens/web/WebMessagesScreen';
 import WebListingsScreen from './screens/web/WebListingsScreen_v2';
 import WebSavedScreen from './screens/web/WebSavedScreen';
+import WebLandlordDetailScreen from './screens/web/WebLandlordDetailScreen';
 import { listings } from './data/listings';
 
 type Tab = 'home' | 'explore' | 'listings' | 'community' | 'messages' | 'saved';
 const VALID_TABS: Tab[] = ['home', 'explore', 'listings', 'community', 'messages', 'saved'];
 
-function parseHash(): { tab: Tab; listingId: number | null; listingTab: string | null } {
+function parseHash(): { tab: Tab; listingId: number | null; listingTab: string | null; landlordName: string | null } {
   const hash = window.location.hash.slice(1);
   if (hash.startsWith('listing/')) {
     const parts = hash.split('/');
     const id = parseInt(parts[1]);
-    return { tab: 'listings', listingId: isNaN(id) ? null : id, listingTab: parts[2] || 'overview' };
+    return { tab: 'listings', listingId: isNaN(id) ? null : id, listingTab: parts[2] || 'overview', landlordName: null };
+  }
+  if (hash.startsWith('landlord/')) {
+    const name = decodeURIComponent(hash.slice('landlord/'.length));
+    return { tab: 'listings', listingId: null, listingTab: null, landlordName: name };
   }
   // Support sub-paths like explore/sublease, explore/filter, listings/filter
   const base = hash.split('/')[0] as Tab;
   const tab = VALID_TABS.includes(base) ? base : 'home';
-  return { tab, listingId: null, listingTab: null };
+  return { tab, listingId: null, listingTab: null, landlordName: null };
 }
 
 function setHash(hash: string) {
@@ -42,6 +47,7 @@ function App() {
   const [activeTab, setActiveTab] = useState<Tab>(initial.tab);
   const [detailListingId, setDetailListingId] = useState<number | null>(initial.listingId);
   const [detailCollegeId, setDetailCollegeId] = useState<string | null>(null);
+  const [landlordName, setLandlordName] = useState<string | null>(initial.landlordName);
   const [mapListingId, setMapListingId] = useState<number | null>(null);
   const [mapSubleaseId, setMapSubleaseId] = useState<number | null>(null);
   const [savedIds, setSavedIds] = useState<Set<number>>(new Set());
@@ -57,8 +63,9 @@ function App() {
   // Sync state when user presses browser back/forward
   useEffect(() => {
     const onHashChange = () => {
-      const { tab, listingId } = parseHash();
+      const { tab, listingId, landlordName: ln } = parseHash();
       setDetailListingId(listingId);
+      setLandlordName(ln);
       if (tab !== activeTab) {
         setVisible(false);
         pendingTab.current = tab;
@@ -98,11 +105,19 @@ function App() {
     setHash(`listing/${id}`);
     setDetailListingId(id);
     setDetailCollegeId(collegeId ?? null);
+    setLandlordName(null);
+  };
+
+  const openLandlord = (name: string) => {
+    setHash(`landlord/${encodeURIComponent(name)}`);
+    setLandlordName(name);
+    setDetailListingId(null);
   };
 
   const closeListing = () => {
     setHash(activeTab);
     setDetailListingId(null);
+    setLandlordName(null);
   };
 
   const detailListing = detailListingId != null ? listings.find(l => l.id === detailListingId) : null;
@@ -124,10 +139,22 @@ function App() {
                   listing={detailListing}
                   onBack={closeListing}
                   selectedCollegeId={detailCollegeId}
-                  onNavigate={(tab, search?) => { if (search) setCommunitySearch(search); closeListing(); navigate(tab); }}
+                  onNavigate={(tab, search?) => {
+                    if (tab.startsWith('landlord/')) { openLandlord(decodeURIComponent(tab.slice('landlord/'.length))); return; }
+                    if (search) setCommunitySearch(search); closeListing(); navigate(tab);
+                  }}
                   onViewOnMap={(id) => { setMapListingId(id); closeListing(); navigate('explore'); }}
                   onTabChange={(t) => setHash(`listing/${detailListingId}/${t}`)}
                   onApplyStep={(step) => setHash(`listing/${detailListingId}/apply/${step}`)}
+                />
+              </div>
+            ) : landlordName ? (
+              <div className="flex flex-1 overflow-hidden" style={{ animation: 'fadeIn 0.18s ease' }}>
+                <style>{`@keyframes fadeIn { from { opacity:0 } to { opacity:1 } }`}</style>
+                <WebLandlordDetailScreen
+                  landlordName={landlordName}
+                  onBack={() => { setLandlordName(null); setHash(activeTab); }}
+                  onViewListing={(id) => { setLandlordName(null); openListing(id); }}
                 />
               </div>
             ) : (

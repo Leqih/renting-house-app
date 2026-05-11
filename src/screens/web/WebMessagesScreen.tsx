@@ -14,6 +14,7 @@ interface Thread {
   listing: string
   address: string
   avatar: string
+  phone: string
   lastMsg: string
   lastTime: string
   unread: number
@@ -28,6 +29,7 @@ const threads: Thread[] = [
     listing: 'Green Street Lofts',
     address: '302 E Green St',
     avatar: 'UH',
+    phone: '+1-217-555-0101',
     lastMsg: 'Great! We\'ll see you then. Please bring a valid ID.',
     lastTime: '2h ago',
     unread: 1,
@@ -45,6 +47,7 @@ const threads: Thread[] = [
     listing: 'Illini Tower',
     address: '1005 S Wright St',
     avatar: 'CP',
+    phone: '+1-217-555-0202',
     lastMsg: 'The unit is still available. Would you like to schedule a viewing?',
     lastTime: '1d ago',
     unread: 0,
@@ -60,6 +63,7 @@ const threads: Thread[] = [
     listing: 'HERE Champaign',
     address: '512 S Mattis Ave',
     avatar: 'GW',
+    phone: '+1-217-555-0303',
     lastMsg: 'Your application is under review. We\'ll follow up by end of week.',
     lastTime: '3d ago',
     unread: 0,
@@ -218,7 +222,7 @@ export default function WebMessagesScreen() {
           <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full ${statusColors[activeThread.status]}`}>
             {activeThread.status}
           </span>
-          <a href={`tel:${activeThread.id}`}
+          <a href={`tel:${activeThread.phone}`}
             className="ml-1 w-8 h-8 rounded-full bg-[#f7f6f2] flex items-center justify-center text-[#6c6a66] hover:bg-[#e5e4e0] transition-colors">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>

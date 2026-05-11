@@ -8,23 +8,121 @@ import type { College } from '../data/colleges';
 
 interface PinPosition { id: number; x: number; y: number }
 
+// Coordinates derived from the UIUC/Champaign-Urbana street grid.
+// Grid reference: Wright St ≈ -88.2272; each block east ≈ +0.0020 lng.
+//   Green St ≈ 40.1092; Chalmers ≈ 40.1063; Daniel ≈ 40.1040;
+//   Armory ≈ 40.1022; White ≈ 40.0993; Springfield ≈ 40.0970.
+//   S 6th St ≈ -88.2305; S 5th ≈ -88.2289; S 3rd ≈ -88.2240; S 1st ≈ -88.2207.
 const listingCoords: Record<number, [number, number]> = {
-  1: [-88.2285, 40.1040],
-  2: [-88.2295, 40.1093],
-  3: [-88.2236, 40.1090],
-  4: [-88.2290, 40.1068],
-  5: [-88.2244, 40.1058],
-  6: [-88.2318, 40.1052],
-  7: [-88.2338, 40.1082],
-  8: [-88.2255, 40.1018],
-  // Green Street 2B2B listings
-  9:  [-88.2252, 40.1092], // Green & Fourth Flats  – 408 E Green St
-  10: [-88.2261, 40.1094], // Green & Third Apartments – 405 E Green St
-  11: [-88.2215, 40.1088], // Sixth Street Commons – 601 E Green St
-  12: [-88.2310, 40.1096], // Green Terrace Co-Living – 209 E Green St
+  1:  [-88.2305, 40.1055], // The Dean Campustown     – 708 S 6th St
+  2:  [-88.2248, 40.1092], // Bankier 202 Green       – 202 E Green St
+  3:  [-88.2228, 40.1092], // HERE Champaign          – 308 E Green St
+  4:  [-88.2193, 40.1063], // Illini Tower            – 409 E Chalmers St
+  5:  [-88.2207, 40.1010], // Ramshaw at First St     – 1010 S First St
+  6:  [-88.2215, 40.1022], // JSM at 308 Armory       – 308 E Armory Ave
+  7:  [-88.2173, 40.1091], // JSM at 510 Green        – 510 E Green St
+  8:  [-88.2068, 40.0990], // Orchard Downs           – 1841 Orchard Pl, Urbana
+  9:  [-88.2170, 40.1091], // Bankier 519 Green       – 519 E Green St
+  10: [-88.2214, 40.1063], // UGroup 303 Chalmers     – 303 E Chalmers St
+  11: [-88.2195, 40.1063], // JSM Illini Manor        – 401 E Chalmers St
+  12: [-88.2263, 40.1063], // MHM at 61 Chalmers      – 61 E Chalmers St
+  13: [-88.2226, 40.1092], // 309 Green               – 309 E Green St
+  14: [-88.2305, 40.1043], // Hub on Campus           – 812 S 6th St
+  15: [-88.2234, 40.1040], // Legacy202               – 202 E Daniel St
+  16: [-88.2243, 40.1092], // The Rive Champaign      – 212 E Green St
+  17: [-88.2213, 40.1040], // 305 Daniel              – 305 E Daniel St
+  18: [-88.2272, 40.1060], // Smile Student Living    – 615 S Wright St
+  19: [-88.2340, 40.1025], // Campus Circle           – 1010 W University Ave, Urbana
+  20: [-88.2076, 40.1175], // The Linc                – 1601 N Lincoln Ave, Urbana
+  21: [-88.2305, 40.1060], // JSM Campus Center       – 601 S 6th St
+  22: [-88.2175, 40.1091], // JSM The Summit          – 507 E Green St
+  23: [-88.2289, 40.1068], // JSM The Station         – 505 S 5th St
+  24: [-88.2305, 40.1068], // The Academy 501         – 501 S 6th St
+  25: [-88.2207, 40.1040], // The Academy on First    – 908 S 1st St
+  26: [-88.2213, 40.0970], // Burnham 310             – 310 E Springfield Ave
+  27: [-88.2213, 40.1077], // Tower at Third          – 302 E John St
+  28: [-88.2240, 40.1055], // The Suites at Third     – 707 S 3rd St
+  29: [-88.2152, 40.0993], // MHM at 606 White        – 606 E White St
+  30: [-88.2076, 40.1210], // Capstone Quarters          – 1901 N Lincoln Ave, Urbana
+  31: [-88.2192, 40.1091], // Green & Fourth Flats        – 404 E Green St
+  32: [-88.2152, 40.1091], // 601 East Green              – 601 E Green St
+  33: [-88.2261, 40.1077], // Lofts 54                    – 54 E John St
+  34: [-88.2175, 40.1022], // Sycamore Arms               – 504 E Armory Ave
+  35: [-88.2232, 40.1063], // Midtown Chalmers            – 207 E Chalmers St
+  36: [-88.2272, 40.1043], // South Wright Suites         – 802 S Wright St
+  37: [-88.2252, 40.0993], // White Street Apts           – 102 E White St
+  38: [-88.2272, 40.1082], // Wright & Green Corner       – 211 S Wright St
+  39: [-88.2252, 40.1063], // The Stratford               – 102 E Chalmers St
+  40: [-88.2193, 40.0970], // Springfield Commons         – 405 E Springfield Ave
 };
 
 function walkRadiusMeters(mins: number) { return mins * 83; }
+
+// ── Campus district zones ────────────────────────────────────────────────────
+// Coordinates from OpenStreetMap Nominatim geocoding of actual UIUC buildings:
+//   Siebel Center:          [-88.2244, 40.1140]  → Engineering, N of Green
+//   Grainger Eng Library:   [-88.2269, 40.1125]  → Engineering, N of Green
+//   BIF (Gies Business):    [-88.2306, 40.1036]  → Business, SW campus
+//   Altgeld Hall (Math/LAS):[-88.2284, 40.1093]  → LAS, right on Green St
+//   Lincoln Hall (LAS):     [-88.2282, 40.1066]  → LAS, S of Green
+//   Gregory Hall (Media):   [-88.2281, 40.1057]  → Media, S of Green
+//   Krannert Art Mus (FAA): [-88.2309, 40.1022]  → FAA, SW campus
+//   Harding Band Bldg (FAA):[-88.2308, 40.1048]  → FAA, SW campus
+//   Noyes Lab (Chem/LAS):   [-88.2261, 40.1084]  → LAS, just S of Green
+//   Illini Union:           [-88.2272, 40.1094]  → on Wright & Green
+const campusZones: {
+  id: string; name: string; nameEn: string; color: string;
+  center: [number, number]; coords: [number, number][]
+}[] = [
+  {
+    // Siebel [-88.2244, 40.1140] + Grainger Lib [-88.2269, 40.1125] — entirely N of Green St
+    id: 'eng', name: 'Engineering', nameEn: 'Grainger College', color: '#3b82f6',
+    center: [-88.2258, 40.1130],
+    coords: [[-88.2315,40.1093],[-88.2210,40.1093],[-88.2210,40.1168],[-88.2315,40.1168],[-88.2315,40.1093]],
+  },
+  {
+    // BIF [-88.2306, 40.1036] — SW campus, west of Wright, south of Green
+    id: 'bus', name: 'Business', nameEn: 'Gies College', color: '#16a34a',
+    center: [-88.2308, 40.1030],
+    coords: [[-88.2358,40.0990],[-88.2255,40.0990],[-88.2255,40.1058],[-88.2358,40.1058],[-88.2358,40.0990]],
+  },
+  {
+    // Turner Hall on Goodwin Ave S (east of Wright) — SE campus
+    id: 'agr', name: 'ACES', nameEn: 'Agricultural Sciences', color: '#f97316',
+    center: [-88.2240, 40.1005],
+    coords: [[-88.2278,40.0972],[-88.2195,40.0972],[-88.2195,40.1038],[-88.2278,40.1038],[-88.2278,40.0972]],
+  },
+  {
+    // Altgeld [-88.2284, 40.1093] + Lincoln Hall [-88.2282, 40.1066] + Noyes [-88.2261, 40.1084]
+    id: 'las', name: 'LAS', nameEn: 'Liberal Arts & Sciences', color: '#a855f7',
+    center: [-88.2276, 40.1075],
+    coords: [[-88.2315,40.1048],[-88.2235,40.1048],[-88.2235,40.1100],[-88.2315,40.1100],[-88.2315,40.1048]],
+  },
+  {
+    // Gregory Hall [-88.2281, 40.1057] — single building, tight zone
+    id: 'med', name: 'Media', nameEn: 'College of Media', color: '#ec4899',
+    center: [-88.2281, 40.1057],
+    coords: [[-88.2302,40.1042],[-88.2258,40.1042],[-88.2258,40.1075],[-88.2302,40.1075],[-88.2302,40.1042]],
+  },
+  {
+    // Krannert [-88.2309, 40.1022] + Harding Band Bldg [-88.2308, 40.1048] — SW campus
+    id: 'art', name: 'FAA', nameEn: 'Fine & Applied Arts', color: '#0ea5e9',
+    center: [-88.2308, 40.1042],
+    coords: [[-88.2352,40.1012],[-88.2262,40.1012],[-88.2262,40.1068],[-88.2352,40.1068],[-88.2352,40.1012]],
+  },
+]
+
+function getListingZone(coord: [number, number] | undefined): typeof campusZones[0] | null {
+  if (!coord) return null;
+  const [lng, lat] = coord;
+  for (const z of campusZones) {
+    const lngs = z.coords.map(c => c[0]);
+    const lats = z.coords.map(c => c[1]);
+    if (lng >= Math.min(...lngs) && lng <= Math.max(...lngs) &&
+        lat >= Math.min(...lats) && lat <= Math.max(...lats)) return z;
+  }
+  return null;
+}
 
 function makeCircle(center: [number, number], radiusM: number, steps = 64): GeoJSON.Feature {
   const [lng, lat] = center;
@@ -43,6 +141,9 @@ export interface SubleasePin {
   name: string
   address: string
   price: number
+  originalPrice: number
+  via: 'individual' | 'official'
+  utilitiesIncluded: boolean
   img: string
   beds: string
   sqft: string
@@ -68,9 +169,11 @@ interface Props {
   onViewSubleaseDetail?: (id: number) => void;
   onPinSelect?: (id: number | null) => void;
   filteredIds?: number[];
+  savedIds?: Set<number>;
+  onToggleSave?: (id: number) => void;
 }
 
-export default function Map3DView({ selectedCollege, profile, onViewListing, onReset, mode = 'rent', subleasePins = [], highlightPinId, onMessagePoster, onViewSubleaseDetail, onPinSelect, filteredIds }: Props) {
+export default function Map3DView({ selectedCollege, profile, onViewListing, onReset, mode = 'rent', subleasePins = [], highlightPinId, onMessagePoster, onViewSubleaseDetail, onPinSelect, filteredIds, savedIds: savedIdsProp, onToggleSave }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const buildingMarkerRef = useRef<maplibregl.Marker | null>(null);
@@ -81,11 +184,12 @@ export default function Map3DView({ selectedCollege, profile, onViewListing, onR
 
   const [mapTypeFilter, setMapTypeFilter] = useState<'any' | 'studio' | '1br' | '2br+'>('any');
   const [priceSort, setPriceSort] = useState<'default' | 'asc' | 'desc'>('default');
-  const [savedIds, setSavedIds] = useState<Set<number>>(new Set());
+  const savedIds = savedIdsProp ?? new Set<number>();
   const [pinPositions, setPinPositions] = useState<PinPosition[]>([]);
   const pinElemsRef = useRef<Map<number, HTMLDivElement>>(new Map());
   // Extended coords map — includes sublease pin IDs mapped to their building coords
   const coordsForPinsRef = useRef<Record<number, [number, number]>>({ ...listingCoords });
+  const [showZones, setShowZones] = useState(false);
 
   const rankedListings = profile
     ? [...listings].sort((a, b) => matchScore(b, profile) - matchScore(a, profile))
@@ -135,6 +239,60 @@ export default function Map3DView({ selectedCollege, profile, onViewListing, onR
       map.addSource('walk-radius', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
       map.addLayer({ id: 'walk-radius-fill', type: 'fill', source: 'walk-radius', paint: { 'fill-color': '#4f46e5', 'fill-opacity': 0.07 } });
       map.addLayer({ id: 'walk-radius-line', type: 'line', source: 'walk-radius', paint: { 'line-color': '#4f46e5', 'line-width': 2, 'line-dasharray': [4, 3], 'line-opacity': 0.5 } });
+
+      // Campus district zone polygons
+      map.addSource('campus-zones', {
+        type: 'geojson',
+        data: {
+          type: 'FeatureCollection',
+          features: campusZones.map(z => ({
+            type: 'Feature' as const,
+            properties: { color: z.color },
+            geometry: { type: 'Polygon' as const, coordinates: [z.coords] },
+          })),
+        },
+      });
+      map.addLayer({
+        id: 'campus-zones-fill', type: 'fill', source: 'campus-zones',
+        layout: { visibility: 'none' },
+        paint: { 'fill-color': ['get', 'color'] as unknown as string, 'fill-opacity': 0.22 },
+      });
+      map.addLayer({
+        id: 'campus-zones-line', type: 'line', source: 'campus-zones',
+        layout: { visibility: 'none' },
+        paint: { 'line-color': ['get', 'color'] as unknown as string, 'line-width': 3, 'line-opacity': 1.0 },
+      });
+      // Zone labels as a symbol layer (GPU-rendered, no JS per-frame cost)
+      map.addSource('campus-zone-labels', {
+        type: 'geojson',
+        data: {
+          type: 'FeatureCollection',
+          features: campusZones.map(z => ({
+            type: 'Feature' as const,
+            properties: { label: z.name, color: z.color },
+            geometry: { type: 'Point' as const, coordinates: z.center },
+          })),
+        },
+      });
+      map.addLayer({
+        id: 'campus-zone-labels', type: 'symbol', source: 'campus-zone-labels',
+        layout: {
+          visibility: 'none',
+          'text-field': ['get', 'label'] as unknown as string,
+          'text-font': ['Noto Sans Bold', 'Arial Unicode MS Bold'],
+          'text-size': 14,
+          'text-anchor': 'center',
+          'text-allow-overlap': true,
+          'text-ignore-placement': true,
+          'text-letter-spacing': 0.05,
+        },
+        paint: {
+          'text-color': ['get', 'color'] as unknown as string,
+          'text-halo-color': 'white',
+          'text-halo-width': 2.5,
+          'text-halo-blur': 0.5,
+        },
+      });
     });
 
     mapRef.current = map;
@@ -192,6 +350,16 @@ export default function Map3DView({ selectedCollege, profile, onViewListing, onR
       }
     }, 300);
   }, [profile, mapLoaded]);
+
+  // Toggle campus district zones
+  useEffect(() => {
+    if (!mapLoaded || !mapRef.current) return;
+    const map = mapRef.current;
+    const vis = showZones ? 'visible' : 'none';
+    if (map.getLayer('campus-zones-fill')) map.setLayoutProperty('campus-zones-fill', 'visibility', vis);
+    if (map.getLayer('campus-zones-line')) map.setLayoutProperty('campus-zones-line', 'visibility', vis);
+    if (map.getLayer('campus-zone-labels')) map.setLayoutProperty('campus-zone-labels', 'visibility', vis);
+  }, [showZones, mapLoaded]);
 
   // Recompute pins when mode or subleasePins change
   useEffect(() => {
@@ -268,9 +436,9 @@ export default function Map3DView({ selectedCollege, profile, onViewListing, onR
   })();
   const allCards = sortedCards;
   const renderBottomStrip = () => (
-    <div className="absolute bottom-0 left-0 right-0 pb-3" style={{ zIndex: 15 }}>
+    <div className="absolute bottom-0 right-0 pb-3" style={{ zIndex: 15, left: 20 }}>
       {/* Sort + Reset row */}
-      <div className="flex items-center justify-between px-5 pb-2">
+      <div className="flex items-center justify-between pr-5 pb-2">
         <div className="flex items-center gap-1.5">
           <span className="text-[10px] font-semibold text-[#1c1c1e]">{allCards.length}</span>
           <span className="text-[10px] text-[#1c1c1e] font-medium">listing{allCards.length !== 1 ? 's' : ''} · Sort:</span>
@@ -287,7 +455,7 @@ export default function Map3DView({ selectedCollege, profile, onViewListing, onR
       </div>
       {/* Horizontally scrollable card strip */}
       <div
-        className="flex gap-3 px-4 overflow-x-auto"
+        className="flex gap-3 overflow-x-auto"
         style={{ scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         <style>{`.map-strip::-webkit-scrollbar { display: none }`}</style>
@@ -314,7 +482,7 @@ export default function Map3DView({ selectedCollege, profile, onViewListing, onR
                       <p className="text-[13px] font-bold text-[#1c1c1e] leading-tight truncate">{l.name}</p>
                       <p className="text-[11px] text-[#9ca3af] leading-tight truncate">{l.address}</p>
                     </div>
-                    <div role="button" className="flex-shrink-0 w-7 h-7 rounded-full bg-[#f5f4f0] flex items-center justify-center mt-0.5 cursor-pointer" onClick={e => { e.stopPropagation(); setSavedIds(prev => { const n = new Set(prev); n.has(l.id) ? n.delete(l.id) : n.add(l.id); return n; }); }}>
+                    <div role="button" className="flex-shrink-0 w-7 h-7 rounded-full bg-[#f5f4f0] flex items-center justify-center mt-0.5 cursor-pointer" onClick={e => { e.stopPropagation(); onToggleSave?.(l.id); }}>
                       <svg width="12" height="12" viewBox="0 0 24 24" fill={savedIds.has(l.id) ? '#ef4444' : 'none'} stroke={savedIds.has(l.id) ? '#ef4444' : '#6c6a66'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                     </div>
                   </div>
@@ -354,7 +522,7 @@ export default function Map3DView({ selectedCollege, profile, onViewListing, onR
   const activeCollege = profile?.college ?? selectedCollege;
 
   return (
-    <div className="relative flex-1 overflow-hidden flex flex-col">
+    <div className="relative flex-1 overflow-hidden flex flex-col select-none">
       <style>{`@keyframes cardIn { from { opacity:0;transform:translateY(-8px) scale(0.97); } to { opacity:1;transform:translateY(0) scale(1); } } .maplibregl-ctrl-top-right { margin-top: 128px !important; }`}</style>
 
       <div ref={containerRef} className="flex-1" />
@@ -377,10 +545,21 @@ export default function Map3DView({ selectedCollege, profile, onViewListing, onR
               </svg>
             </button>
           </div>
-          {/* 3D / 2D toggle — inline with search bar */}
+          {/* 3D / 2D toggle */}
           <button onClick={toggle3D}
             className="h-12 px-3.5 bg-white/95 backdrop-blur-md rounded-2xl shadow-lg border border-black/8 text-[12px] font-bold text-[#1c1c1e] flex items-center gap-1.5 flex-shrink-0">
             {is3D ? '🏙️ 3D' : '🗺️ 2D'}
+          </button>
+          {/* District zones toggle */}
+          <button onClick={() => setShowZones(v => !v)}
+            className={`h-12 px-3.5 rounded-2xl shadow-lg border text-[12px] font-bold flex items-center gap-1.5 flex-shrink-0 transition-all ${
+              showZones
+                ? 'bg-[#1c1c1e] text-white border-[#1c1c1e]'
+                : 'bg-white/95 backdrop-blur-md text-[#1c1c1e] border-black/8'
+            }`}
+            title="Show campus districts"
+          >
+            🏫 Districts
           </button>
         </div>
 
@@ -467,6 +646,8 @@ export default function Map3DView({ selectedCollege, profile, onViewListing, onR
             const hasProfile = !!profile;
             const isBestMatch = hasProfile && rankedListings[0]?.id === listing.id;
             const dotColor = !hasProfile ? '#9ca3af' : score >= 80 ? '#22c55e' : score >= 60 ? '#f59e0b' : '#9ca3af';
+            const zone = showZones ? getListingZone(listingCoords[listing.id]) : null;
+            const zoneColor = zone?.color;
             return (
               <div
                 key={listing.id}
@@ -491,22 +672,24 @@ export default function Map3DView({ selectedCollege, profile, onViewListing, onR
                   <span style={{ fontSize: 9, background: '#22c55e', color: 'white', fontWeight: 800, padding: '2px 7px', borderRadius: 20, marginBottom: 4, whiteSpace: 'nowrap', display: 'block' }}>★ Best match</span>
                 )}
                 <div style={{
-                  background: isSelected ? '#1c1c1e' : 'rgba(255,255,255,0.97)',
-                  color: isSelected ? 'white' : '#1c1c1e',
+                  background: isSelected ? (zoneColor ?? '#1c1c1e') : 'rgba(255,255,255,0.97)',
+                  color: isSelected ? 'white' : (zoneColor ?? '#1c1c1e'),
                   borderRadius: 24, padding: '6px 13px',
                   display: 'flex', alignItems: 'center', gap: 5,
-                  boxShadow: isSelected ? '0 6px 24px rgba(0,0,0,0.3)' : '0 2px 12px rgba(0,0,0,0.14)',
-                  border: isSelected ? 'none' : '1px solid rgba(0,0,0,0.08)',
+                  boxShadow: isSelected
+                    ? `0 6px 24px ${zoneColor ? zoneColor + '66' : 'rgba(0,0,0,0.3)'}`
+                    : `0 2px 12px rgba(0,0,0,0.14)`,
+                  border: isSelected ? 'none' : `2px solid ${zoneColor ?? 'rgba(0,0,0,0.08)'}`,
                   fontSize: 12, fontWeight: 800, whiteSpace: 'nowrap',
                 }}>
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={isSelected ? 'white' : '#1c1c1e'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={isSelected ? 'white' : (zoneColor ?? '#1c1c1e')} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
                     <polyline points="9 22 9 12 15 12 15 22" />
                   </svg>
                   <span>${listing.price}/mo</span>
                 </div>
-                <div style={{ width: 2, height: 8, background: isSelected ? '#1c1c1e' : 'rgba(0,0,0,0.2)', marginTop: -1 }} />
-                <div style={{ width: 7, height: 7, borderRadius: '50%', background: isSelected ? '#1c1c1e' : dotColor, border: '2px solid white', boxShadow: '0 1px 4px rgba(0,0,0,0.25)', marginTop: -1 }} />
+                <div style={{ width: 2, height: 8, background: isSelected ? (zoneColor ?? '#1c1c1e') : (zoneColor ?? 'rgba(0,0,0,0.2)'), marginTop: -1 }} />
+                <div style={{ width: 7, height: 7, borderRadius: '50%', background: isSelected ? (zoneColor ?? '#1c1c1e') : (zoneColor ?? dotColor), border: '2px solid white', boxShadow: '0 1px 4px rgba(0,0,0,0.25)', marginTop: -1 }} />
               </div>
             );
           })
@@ -720,13 +903,13 @@ export default function Map3DView({ selectedCollege, profile, onViewListing, onR
       {mode === 'sublease' ? (
         /* ── Sublease horizontal strip ── */
         subleasePins.length > 0 && (
-          <div className="absolute bottom-0 left-0 right-0 pb-3" style={{ zIndex: 15 }}>
+          <div className="absolute bottom-0 right-0 pb-3" style={{ zIndex: 15, left: 20 }}>
             <div className="flex justify-end items-center px-6 pt-2 pb-5 gap-1.5">
               <span className="text-[11px] font-semibold text-white bg-black/40 backdrop-blur-sm px-2.5 py-1 rounded-lg">
                 {subleasePins.length} sublease{subleasePins.length > 1 ? 's' : ''} available
               </span>
             </div>
-            <div className="flex items-stretch px-4 gap-0">
+            <div className="flex items-stretch gap-0" style={{ scrollSnapType: 'x mandatory', overflowX: 'auto', scrollbarWidth: 'none' }}>
               {subleasePins.slice(0, 3).map(s => {
                 const isActive = selectedId === s.id
                 return (
@@ -753,14 +936,24 @@ export default function Map3DView({ selectedCollege, profile, onViewListing, onR
                           </div>
                           <span className={`flex-shrink-0 text-[9px] font-bold px-2 py-0.5 rounded-full ${s.badgeColor}`}>{s.period}</span>
                         </div>
-                        <p className="text-[15px] font-black text-[#1c1c1e] leading-tight">${s.price}<span className="text-[11px] font-normal text-[#9ca3af]">/mo</span></p>
+                        {/* Price row: current + original crossed out */}
+                        <div className="flex items-baseline gap-1.5">
+                          <p className="text-[15px] font-black text-[#1c1c1e] leading-tight">${s.price}<span className="text-[11px] font-normal text-[#9ca3af]">/mo</span></p>
+                          <span className="text-[11px] text-[#c0bfbb] line-through">${s.originalPrice}</span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2 flex-wrap">
+                      <div className="flex items-center gap-1.5 flex-wrap">
                         <span className="text-[10px] text-[#6c6a66]">{s.beds}</span>
                         <span className="text-[10px] text-[#6c6a66]">·</span>
                         <span className="text-[10px] text-[#6c6a66]">{s.sqft}</span>
-                        {s.furnished && <span className="text-[10px] font-semibold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-full">Furnished</span>}
-                        <span className="text-[10px] text-[#9ca3af] ml-auto truncate">by {s.postedBy}</span>
+                        {/* Via tag */}
+                        <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${s.via === 'individual' ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'}`}>
+                          {s.via === 'individual' ? 'Individual' : 'Official'}
+                        </span>
+                        {/* Utilities tag */}
+                        <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${s.utilitiesIncluded ? 'bg-green-50 text-green-600' : 'bg-amber-50 text-amber-600'}`}>
+                          {s.utilitiesIncluded ? 'Utils incl.' : 'Utils extra'}
+                        </span>
                       </div>
                     </div>
                   </button>

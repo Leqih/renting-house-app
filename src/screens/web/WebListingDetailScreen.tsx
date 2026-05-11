@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { Listing } from '../../data/listings'
-import { listings } from '../../data/listings'
+import { listings, landlordReviews } from '../../data/listings'
 
 const colleges = [
   { id: 'eng',  short: 'Grainger Engineering', full: 'Grainger College of Engineering' },
@@ -112,12 +112,13 @@ export default function WebListingDetailScreen({ listing, onBack, selectedColleg
   const [tourTime, setTourTime] = useState('')
   const [applyName, setApplyName] = useState('')
   const [applyEmail, setApplyEmail] = useState('')
-  const [applyNetid, setApplyNetid] = useState('')
   const [applyNote, setApplyNote] = useState('')
 
   const reviews = listingReviews[listing.id] ?? []
   const avgRating = reviews.length ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1) : null
-  const galleryPhotos = [listing.img, ...listings.filter(l => l.id !== listing.id).slice(0, 3).map(l => l.img)]
+  const galleryPhotos = listing.photos
+    ? [{ label: 'Exterior', url: listing.img }, ...listing.photos]
+    : [listing.img, ...listings.filter(l => l.id !== listing.id).slice(0, 3).map(l => l.img)].map((url, i) => ({ label: i === 0 ? 'Exterior' : 'Interior', url }))
 
   const tabs: { id: Tab; label: string }[] = [
     { id: 'overview', label: 'Overview' },
@@ -137,7 +138,7 @@ export default function WebListingDetailScreen({ listing, onBack, selectedColleg
         {/* Main photo */}
         <div className="flex-1 relative overflow-hidden">
           <img
-            src={galleryPhotos[photoIdx]}
+            src={galleryPhotos[photoIdx].url}
             alt={listing.name}
             className="w-full h-full object-cover transition-opacity duration-300"
           />
@@ -195,13 +196,14 @@ export default function WebListingDetailScreen({ listing, onBack, selectedColleg
         <div className="bg-[#1c1c1e] flex-shrink-0 flex items-center gap-3 px-5 py-3">
           {/* Thumbnails */}
           <div className="flex gap-1.5 flex-shrink-0">
-            {galleryPhotos.map((img, i) => (
+            {galleryPhotos.map((photo, i) => (
               <button
                 key={i}
                 onClick={() => setPhotoIdx(i)}
-                className={`w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 transition-all ${photoIdx === i ? 'ring-2 ring-white ring-offset-1 ring-offset-[#1c1c1e]' : 'opacity-40 hover:opacity-70'}`}
+                className={`w-14 rounded-xl overflow-hidden flex-shrink-0 transition-all ${photoIdx === i ? 'ring-2 ring-white ring-offset-1 ring-offset-[#1c1c1e]' : 'opacity-40 hover:opacity-70'}`}
               >
-                <img src={img} className="w-full h-full object-cover" />
+                <img src={photo.url} className="w-full h-11 object-cover" />
+                <p className="text-[8px] text-white/70 text-center truncate px-0.5 pb-0.5 bg-[#1c1c1e]">{photo.label}</p>
               </button>
             ))}
           </div>
@@ -337,13 +339,53 @@ export default function WebListingDetailScreen({ listing, onBack, selectedColleg
                   {/* Property manager */}
                   <div>
                     <p className="text-[11px] font-bold text-[#9ca3af] uppercase tracking-widest mb-3">Property manager</p>
-                    <div className="bg-[#f9f8f6] rounded-2xl p-3.5 flex items-center gap-3">
+                    <div
+                      className="bg-[#f9f8f6] rounded-2xl p-3.5 flex items-center gap-3 cursor-pointer hover:bg-[#f0efeb] transition-colors"
+                      onClick={() => onNavigate?.('landlord/' + encodeURIComponent(listing.landlord))}
+                    >
                       <div className="w-10 h-10 rounded-xl bg-[#1c1c1e] flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
                         {listing.landlord.split(' ').map(w => w[0]).join('').slice(0, 2)}
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-[13px] font-semibold text-[#1c1c1e]">{listing.landlord}</p>
                         <p className="text-[11px] text-[#6c6a66] mt-0.5">{listing.phone}</p>
+                        {(() => {
+                          const rev = landlordReviews[listing.landlord]
+                          if (!rev) return null
+                          const filled = Math.floor(rev.rating)
+                          const half = rev.rating - filled >= 0.5
+                          const ratingColor = rev.rating >= 4.0 ? 'text-green-600' : rev.rating >= 3.5 ? 'text-amber-500' : 'text-red-500'
+                          return (
+                            <a href={rev.googleUrl} target="_blank" rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 mt-1.5 hover:opacity-70 transition-opacity"
+                              onClick={e => e.stopPropagation()}
+                            >
+                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+                                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                              </svg>
+                              <span className={`text-[11px] font-bold ${ratingColor}`}>{rev.rating.toFixed(1)}</span>
+                              <div className="flex gap-0.5">
+                                {[1,2,3,4,5].map(i => (
+                                  <svg key={i} width="9" height="9" viewBox="0 0 24 24"
+                                    fill={i <= filled ? '#FBBC05' : (i === filled + 1 && half) ? 'url(#halfPM)' : '#d1d5db'}
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <defs>
+                                      <linearGradient id="halfPM" x1="0" x2="1" y1="0" y2="0">
+                                        <stop offset="50%" stopColor="#FBBC05"/>
+                                        <stop offset="50%" stopColor="#d1d5db"/>
+                                      </linearGradient>
+                                    </defs>
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                  </svg>
+                                ))}
+                              </div>
+                              <span className="text-[10px] text-[#9ca3af]">({rev.reviewCount.toLocaleString()})</span>
+                            </a>
+                          )
+                        })()}
                       </div>
                       <button onClick={() => onNavigate?.('messages')} className="px-3 py-1.5 bg-[#1c1c1e] text-white text-[12px] font-semibold rounded-xl hover:bg-[#333] transition-colors flex-shrink-0">
                         Message →
@@ -584,7 +626,6 @@ export default function WebListingDetailScreen({ listing, onBack, selectedColleg
                     {[
                       { label: 'Full Name', val: applyName, set: setApplyName, ph: 'Jane Smith' },
                       { label: 'Email', val: applyEmail, set: setApplyEmail, ph: 'you@illinois.edu' },
-                      { label: 'UIUC NetID', val: applyNetid, set: setApplyNetid, ph: 'jsmith4' },
                     ].map(f => (
                       <div key={f.label}>
                         <label className="text-[11px] font-bold text-[#9ca3af] uppercase tracking-widest mb-1.5 block">{f.label}</label>
