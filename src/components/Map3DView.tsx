@@ -58,57 +58,40 @@ const listingCoords: Record<number, [number, number]> = {
 
 function walkRadiusMeters(mins: number) { return mins * 83; }
 
-// ── Campus district zones ────────────────────────────────────────────────────
-// Coordinates from OpenStreetMap Nominatim geocoding of actual UIUC buildings:
-//   Siebel Center:          [-88.2244, 40.1140]  → Engineering, N of Green
-//   Grainger Eng Library:   [-88.2269, 40.1125]  → Engineering, N of Green
-//   BIF (Gies Business):    [-88.2306, 40.1036]  → Business, SW campus
-//   Altgeld Hall (Math/LAS):[-88.2284, 40.1093]  → LAS, right on Green St
-//   Lincoln Hall (LAS):     [-88.2282, 40.1066]  → LAS, S of Green
-//   Gregory Hall (Media):   [-88.2281, 40.1057]  → Media, S of Green
-//   Krannert Art Mus (FAA): [-88.2309, 40.1022]  → FAA, SW campus
-//   Harding Band Bldg (FAA):[-88.2308, 40.1048]  → FAA, SW campus
-//   Noyes Lab (Chem/LAS):   [-88.2261, 40.1084]  → LAS, just S of Green
-//   Illini Union:           [-88.2272, 40.1094]  → on Wright & Green
+// ── Campus district zones — simple grid-aligned rectangles ──
 const campusZones: {
   id: string; name: string; nameEn: string; color: string;
   center: [number, number]; coords: [number, number][]
 }[] = [
   {
-    // Siebel [-88.2244, 40.1140] + Grainger Lib [-88.2269, 40.1125] — entirely N of Green St
     id: 'eng', name: 'Engineering', nameEn: 'Grainger College', color: '#3b82f6',
-    center: [-88.2258, 40.1130],
-    coords: [[-88.2315,40.1093],[-88.2210,40.1093],[-88.2210,40.1168],[-88.2315,40.1168],[-88.2315,40.1093]],
+    center: [-88.2255, 40.1130],
+    coords: [[-88.2300, 40.1092], [-88.2210, 40.1092], [-88.2210, 40.1168], [-88.2300, 40.1168], [-88.2300, 40.1092]],
   },
   {
-    // BIF [-88.2306, 40.1036] — SW campus, west of Wright, south of Green
     id: 'bus', name: 'Business', nameEn: 'Gies College', color: '#16a34a',
-    center: [-88.2308, 40.1030],
-    coords: [[-88.2358,40.0990],[-88.2255,40.0990],[-88.2255,40.1058],[-88.2358,40.1058],[-88.2358,40.0990]],
+    center: [-88.2318, 40.1025],
+    coords: [[-88.2370, 40.0985], [-88.2270, 40.0985], [-88.2270, 40.1065], [-88.2370, 40.1065], [-88.2370, 40.0985]],
   },
   {
-    // Turner Hall on Goodwin Ave S (east of Wright) — SE campus
     id: 'agr', name: 'ACES', nameEn: 'Agricultural Sciences', color: '#f97316',
-    center: [-88.2240, 40.1005],
-    coords: [[-88.2278,40.0972],[-88.2195,40.0972],[-88.2195,40.1038],[-88.2278,40.1038],[-88.2278,40.0972]],
+    center: [-88.2235, 40.1010],
+    coords: [[-88.2285, 40.0965], [-88.2185, 40.0965], [-88.2185, 40.1055], [-88.2285, 40.1055], [-88.2285, 40.0965]],
   },
   {
-    // Altgeld [-88.2284, 40.1093] + Lincoln Hall [-88.2282, 40.1066] + Noyes [-88.2261, 40.1084]
     id: 'las', name: 'LAS', nameEn: 'Liberal Arts & Sciences', color: '#a855f7',
-    center: [-88.2276, 40.1075],
-    coords: [[-88.2315,40.1048],[-88.2235,40.1048],[-88.2235,40.1100],[-88.2315,40.1100],[-88.2315,40.1048]],
+    center: [-88.2278, 40.1075],
+    coords: [[-88.2330, 40.1046], [-88.2240, 40.1046], [-88.2240, 40.1105], [-88.2330, 40.1105], [-88.2330, 40.1046]],
   },
   {
-    // Gregory Hall [-88.2281, 40.1057] — single building, tight zone
     id: 'med', name: 'Media', nameEn: 'College of Media', color: '#ec4899',
-    center: [-88.2281, 40.1057],
-    coords: [[-88.2302,40.1042],[-88.2258,40.1042],[-88.2258,40.1075],[-88.2302,40.1075],[-88.2302,40.1042]],
+    center: [-88.2281, 40.1058],
+    coords: [[-88.2310, 40.1042], [-88.2255, 40.1042], [-88.2255, 40.1080], [-88.2310, 40.1080], [-88.2310, 40.1042]],
   },
   {
-    // Krannert [-88.2309, 40.1022] + Harding Band Bldg [-88.2308, 40.1048] — SW campus
     id: 'art', name: 'FAA', nameEn: 'Fine & Applied Arts', color: '#0ea5e9',
-    center: [-88.2308, 40.1042],
-    coords: [[-88.2352,40.1012],[-88.2262,40.1012],[-88.2262,40.1068],[-88.2352,40.1068],[-88.2352,40.1012]],
+    center: [-88.2228, 40.1080],
+    coords: [[-88.2270, 40.1060], [-88.2195, 40.1060], [-88.2195, 40.1108], [-88.2270, 40.1108], [-88.2270, 40.1060]],
   },
 ]
 
@@ -199,6 +182,15 @@ export default function Map3DView({ selectedCollege, profile, onViewListing, onR
   modeRef.current = mode;
   subleasePinsRef.current = subleasePins;
   const [showZones, setShowZones] = useState(false);
+  const showZonesRef = useRef(false);
+  showZonesRef.current = showZones;
+  const zoneLabelElemsRef = useRef<Map<string, HTMLDivElement>>(new Map());
+  const [activeZoneId, setActiveZoneId] = useState<string | null>(null);
+  const activeZoneIdRef = useRef<string | null>(null);
+  activeZoneIdRef.current = activeZoneId;
+  const [mapZoom, setMapZoom] = useState(15.5);
+  const [mapMaxPrice, setMapMaxPrice] = useState<number | null>(null);
+  const [walkTimeMins, setWalkTimeMins] = useState<5 | 10 | 15>(10);
 
   const rankedListings = profile
     ? [...listings].sort((a, b) => matchScore(b, profile) - matchScore(a, profile))
@@ -229,6 +221,15 @@ export default function Map3DView({ selectedCollege, profile, onViewListing, onR
         el.style.left = `${pt.x}px`;
         el.style.top = `${pt.y}px`;
       });
+      if (showZonesRef.current) {
+        zoneLabelElemsRef.current.forEach((el, id) => {
+          const zone = campusZones.find(z => z.id === id);
+          if (!zone) return;
+          const pt = map.project(zone.center as maplibregl.LngLatLike);
+          el.style.left = `${pt.x}px`;
+          el.style.top = `${pt.y}px`;
+        });
+      }
     };
     const updatePinState = () => {
       if (modeRef.current === 'sublease') {
@@ -267,52 +268,56 @@ export default function Map3DView({ selectedCollege, profile, onViewListing, onR
           type: 'FeatureCollection',
           features: campusZones.map(z => ({
             type: 'Feature' as const,
-            properties: { color: z.color },
+            properties: { color: z.color, zoneId: z.id },
             geometry: { type: 'Polygon' as const, coordinates: [z.coords] },
           })),
+        },
+      });
+      // Glow halo — wide blurred line underneath for premium feel
+      map.addLayer({
+        id: 'campus-zones-glow', type: 'line', source: 'campus-zones',
+        layout: { visibility: 'none' },
+        paint: {
+          'line-color': ['get', 'color'] as unknown as string,
+          'line-width': 14,
+          'line-opacity': 0.20,
+          'line-blur': 10,
         },
       });
       map.addLayer({
         id: 'campus-zones-fill', type: 'fill', source: 'campus-zones',
         layout: { visibility: 'none' },
-        paint: { 'fill-color': ['get', 'color'] as unknown as string, 'fill-opacity': 0.22 },
+        paint: { 'fill-color': ['get', 'color'] as unknown as string, 'fill-opacity': 0.13 },
       });
       map.addLayer({
         id: 'campus-zones-line', type: 'line', source: 'campus-zones',
         layout: { visibility: 'none' },
-        paint: { 'line-color': ['get', 'color'] as unknown as string, 'line-width': 3, 'line-opacity': 1.0 },
-      });
-      // Zone labels as a symbol layer (GPU-rendered, no JS per-frame cost)
-      map.addSource('campus-zone-labels', {
-        type: 'geojson',
-        data: {
-          type: 'FeatureCollection',
-          features: campusZones.map(z => ({
-            type: 'Feature' as const,
-            properties: { label: z.name, color: z.color },
-            geometry: { type: 'Point' as const, coordinates: z.center },
-          })),
-        },
-      });
-      map.addLayer({
-        id: 'campus-zone-labels', type: 'symbol', source: 'campus-zone-labels',
-        layout: {
-          visibility: 'none',
-          'text-field': ['get', 'label'] as unknown as string,
-          'text-font': ['Noto Sans Bold', 'Arial Unicode MS Bold'],
-          'text-size': 14,
-          'text-anchor': 'center',
-          'text-allow-overlap': true,
-          'text-ignore-placement': true,
-          'text-letter-spacing': 0.05,
-        },
         paint: {
-          'text-color': ['get', 'color'] as unknown as string,
-          'text-halo-color': 'white',
-          'text-halo-width': 2.5,
-          'text-halo-blur': 0.5,
+          'line-color': ['get', 'color'] as unknown as string,
+          'line-width': 2,
+          'line-opacity': 0.90,
+          'line-blur': 0.4,
         },
       });
+
+      // Click fill area to activate zone
+      map.on('click', 'campus-zones-fill', (e) => {
+        if (!showZonesRef.current) return;
+        const zoneId = e.features?.[0]?.properties?.zoneId as string | undefined;
+        if (!zoneId) return;
+        const zone = campusZones.find(z => z.id === zoneId);
+        if (!zone) return;
+        const next = activeZoneIdRef.current === zoneId ? null : zoneId;
+        setActiveZoneId(next);
+        if (next) {
+          map.flyTo({ center: zone.center, zoom: 15.8, pitch: 52, bearing: -20, duration: 700, essential: true });
+        } else {
+          map.flyTo({ center: [-88.2272, 40.1075] as [number, number], zoom: 15.5, pitch: 55, bearing: -20, duration: 700, essential: true });
+        }
+      });
+      map.on('mouseenter', 'campus-zones-fill', () => { if (showZonesRef.current) map.getCanvas().style.cursor = 'pointer'; });
+      map.on('mouseleave', 'campus-zones-fill', () => { map.getCanvas().style.cursor = ''; });
+      map.on('zoomend', () => { setMapZoom(map.getZoom()); updatePinState(); });
     });
 
     mapRef.current = map;
@@ -327,7 +332,7 @@ export default function Map3DView({ selectedCollege, profile, onViewListing, onR
     const src = map.getSource('walk-radius') as maplibregl.GeoJSONSource | undefined;
     if (src) {
       if (college) {
-        src.setData(makeCircle(college.coords, walkRadiusMeters(10)));
+        src.setData(makeCircle(college.coords, walkRadiusMeters(walkTimeMins)));
       } else {
         src.setData({ type: 'FeatureCollection', features: [] });
       }
@@ -349,7 +354,7 @@ export default function Map3DView({ selectedCollege, profile, onViewListing, onR
         .setLngLat(college.coords)
         .addTo(map);
     }
-  }, [mapLoaded, profile, selectedCollege]);
+  }, [mapLoaded, profile, selectedCollege, walkTimeMins]);
 
   useEffect(() => {
     if (!mapLoaded || !mapRef.current || !profile) return;
@@ -376,10 +381,38 @@ export default function Map3DView({ selectedCollege, profile, onViewListing, onR
     if (!mapLoaded || !mapRef.current) return;
     const map = mapRef.current;
     const vis = showZones ? 'visible' : 'none';
+    if (map.getLayer('campus-zones-glow')) map.setLayoutProperty('campus-zones-glow', 'visibility', vis);
     if (map.getLayer('campus-zones-fill')) map.setLayoutProperty('campus-zones-fill', 'visibility', vis);
     if (map.getLayer('campus-zones-line')) map.setLayoutProperty('campus-zones-line', 'visibility', vis);
-    if (map.getLayer('campus-zone-labels')) map.setLayoutProperty('campus-zone-labels', 'visibility', vis);
+    // Position zone label DOM elements when zones become visible
+    if (showZones) {
+      campusZones.forEach(zone => {
+        const el = zoneLabelElemsRef.current.get(zone.id);
+        if (!el) return;
+        const pt = map.project(zone.center as maplibregl.LngLatLike);
+        el.style.left = `${pt.x}px`;
+        el.style.top = `${pt.y}px`;
+      });
+    }
   }, [showZones, mapLoaded]);
+
+  // Dim non-active zones using data-driven paint expressions
+  useEffect(() => {
+    if (!mapLoaded || !mapRef.current || !showZones) return;
+    const map = mapRef.current;
+    if (activeZoneId) {
+      const fillExpr = ['case', ['==', ['get', 'zoneId'], activeZoneId], 0.18, 0.04] as unknown as number;
+      const lineExpr = ['case', ['==', ['get', 'zoneId'], activeZoneId], 0.90, 0.12] as unknown as number;
+      const glowExpr = ['case', ['==', ['get', 'zoneId'], activeZoneId], 0.22, 0.04] as unknown as number;
+      if (map.getLayer('campus-zones-fill')) map.setPaintProperty('campus-zones-fill', 'fill-opacity', fillExpr);
+      if (map.getLayer('campus-zones-line')) map.setPaintProperty('campus-zones-line', 'line-opacity', lineExpr);
+      if (map.getLayer('campus-zones-glow')) map.setPaintProperty('campus-zones-glow', 'line-opacity', glowExpr);
+    } else {
+      if (map.getLayer('campus-zones-fill')) map.setPaintProperty('campus-zones-fill', 'fill-opacity', 0.13);
+      if (map.getLayer('campus-zones-line')) map.setPaintProperty('campus-zones-line', 'line-opacity', 0.90);
+      if (map.getLayer('campus-zones-glow')) map.setPaintProperty('campus-zones-glow', 'line-opacity', 0.20);
+    }
+  }, [activeZoneId, showZones, mapLoaded]);
 
   // Recompute pins when mode or subleasePins change
   useEffect(() => {
@@ -441,6 +474,8 @@ export default function Map3DView({ selectedCollege, profile, onViewListing, onR
 
   const typeFilteredListings = listings.filter(l => {
     if (filteredIds && !filteredIds.includes(l.id)) return false;
+    if (activeZoneId && getListingZone(listingCoords[l.id])?.id !== activeZoneId) return false;
+    if (mapMaxPrice !== null && l.price > mapMaxPrice) return false;
     if (mapTypeFilter === 'studio') return l.beds.toLowerCase().includes('studio')
     if (mapTypeFilter === '1br') return l.beds.startsWith('1B')
     if (mapTypeFilter === '2br+') return !l.beds.toLowerCase().includes('studio') && !l.beds.startsWith('1B')
@@ -475,6 +510,7 @@ export default function Map3DView({ selectedCollege, profile, onViewListing, onR
       </div>
       {/* Horizontally scrollable card strip */}
       <div
+        key={`strip-${activeZoneId ?? 'all'}-${mapMaxPrice ?? 'any'}`}
         className="flex gap-3 overflow-x-auto"
         style={{ scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
@@ -486,7 +522,7 @@ export default function Map3DView({ selectedCollege, profile, onViewListing, onR
           return (
             <button key={l.id}
               onClick={() => { setSelectedId(l.id); flyTo(l.id); setGuideIdx(i); onPinSelect?.(l.id); }}
-              style={{ scrollSnapAlign: 'start', flexShrink: 0 }}
+              style={{ scrollSnapAlign: 'start', flexShrink: 0, animation: 'cardIn 0.25s ease both', animationDelay: `${i * 25}ms` }}
               className={`flex w-[260px] rounded-2xl overflow-hidden transition-all h-[136px] bg-white text-left ${isActive ? 'ring-2 ring-[#1c1c1e] shadow-xl' : 'shadow-lg hover:shadow-xl'}`}
             >
               <div className="relative w-[110px] flex-shrink-0 h-full">
@@ -543,7 +579,7 @@ export default function Map3DView({ selectedCollege, profile, onViewListing, onR
 
   return (
     <div className="relative flex-1 overflow-hidden flex flex-col select-none">
-      <style>{`@keyframes cardIn { from { opacity:0;transform:translateY(-8px) scale(0.97); } to { opacity:1;transform:translateY(0) scale(1); } } .maplibregl-ctrl-top-right { margin-top: 128px !important; }`}</style>
+      <style>{`@keyframes cardIn { from { opacity:0;transform:translateY(-8px) scale(0.97); } to { opacity:1;transform:translateY(0) scale(1); } } @keyframes urgentPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.6); } 50% { box-shadow: 0 0 0 6px rgba(239,68,68,0); } } .maplibregl-ctrl-top-right { margin-top: 128px !important; }`}</style>
 
       <div ref={containerRef} className="flex-1" />
 
@@ -583,6 +619,36 @@ export default function Map3DView({ selectedCollege, profile, onViewListing, onR
           </button>
         </div>
 
+        {/* Zone legend chips — visible when Districts is on */}
+        {showZones && (
+          <div className="flex gap-1.5 flex-wrap">
+            {campusZones.map(zone => {
+              const count = listings.filter(l => getListingZone(listingCoords[l.id])?.id === zone.id).length;
+              const isActive = activeZoneId === zone.id;
+              return (
+                <button key={zone.id}
+                  onClick={() => {
+                    const next = isActive ? null : zone.id;
+                    setActiveZoneId(next);
+                    if (next && mapRef.current) {
+                      mapRef.current.flyTo({ center: zone.center, zoom: 15.8, pitch: 52, bearing: -20, duration: 700, essential: true });
+                    } else if (!next && mapRef.current) {
+                      mapRef.current.flyTo({ center: [-88.2272, 40.1075], zoom: 15.5, pitch: 55, bearing: -20, duration: 700, essential: true });
+                    }
+                  }}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-[10px] font-bold shadow-md border transition-all"
+                  style={isActive
+                    ? { background: zone.color, borderColor: zone.color, color: 'white' }
+                    : { background: 'white', borderColor: '#e8e7e3', color: '#1c1c1e' }}>
+                  <div style={{ width: 7, height: 7, borderRadius: '50%', background: isActive ? 'rgba(255,255,255,0.7)' : zone.color, flexShrink: 0 }} />
+                  <span>{zone.name}</span>
+                  <span style={{ opacity: isActive ? 0.75 : undefined }} className={isActive ? '' : 'text-[#9ca3af] font-semibold'}>{count}</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+
         {/* Type icon buttons — hidden in sublease mode */}
         <div className={`flex gap-2 ${mode === 'sublease' ? 'hidden' : ''}`}>
           {([
@@ -604,6 +670,62 @@ export default function Map3DView({ selectedCollege, profile, onViewListing, onR
         </div>
       </div>
 
+      {/* Zone label DOM overlays — positioned via map.project, updated on every map move */}
+      {showZones && campusZones.map(zone => {
+        const count = listings.filter(l => getListingZone(listingCoords[l.id])?.id === zone.id).length;
+        return (
+          <div
+            key={zone.id}
+            ref={el => { if (el) zoneLabelElemsRef.current.set(zone.id, el); else zoneLabelElemsRef.current.delete(zone.id); }}
+            onClick={() => {
+              const next = activeZoneId === zone.id ? null : zone.id;
+              setActiveZoneId(next);
+              if (next && mapRef.current) {
+                mapRef.current.flyTo({ center: zone.center, zoom: 15.8, pitch: 52, bearing: -20, duration: 700, essential: true });
+              } else if (!next && mapRef.current) {
+                mapRef.current.flyTo({ center: [-88.2272, 40.1075], zoom: 15.5, pitch: 55, bearing: -20, duration: 700, essential: true });
+              }
+            }}
+            style={{
+              position: 'absolute', left: 0, top: 0,
+              transform: 'translate(-50%, -50%)',
+              pointerEvents: 'auto', zIndex: 4, cursor: 'pointer',
+            }}
+          >
+            {mapZoom < 14.5 ? (
+              <div style={{
+                width: 48, height: 48, borderRadius: '50%',
+                background: zone.color,
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                boxShadow: `0 4px 14px ${zone.color}55`,
+                border: '2px solid white',
+                transition: 'all 0.2s ease',
+              }}>
+                <span style={{ fontSize: 12, fontWeight: 900, color: 'white', lineHeight: 1 }}>{count}</span>
+                <span style={{ fontSize: 8, fontWeight: 600, color: 'rgba(255,255,255,0.8)', lineHeight: 1.2, textAlign: 'center', maxWidth: 40, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{zone.name}</span>
+              </div>
+            ) : (
+              <div style={{
+                background: activeZoneId === zone.id ? zone.color : 'white',
+                border: `1px solid ${activeZoneId === zone.id ? zone.color : '#e8e7e3'}`,
+                borderRadius: 22,
+                padding: '5px 12px 5px 9px',
+                display: 'flex', alignItems: 'center', gap: 6,
+                boxShadow: activeZoneId === zone.id ? `0 4px 14px ${zone.color}55` : '0 2px 10px rgba(0,0,0,0.12)',
+                whiteSpace: 'nowrap',
+                transition: 'all 0.2s ease',
+              }}>
+                <div style={{ width: 7, height: 7, borderRadius: '50%', background: activeZoneId === zone.id ? 'rgba(255,255,255,0.7)' : zone.color, flexShrink: 0 }} />
+                <span style={{ fontSize: 11, fontWeight: 700, color: activeZoneId === zone.id ? 'white' : '#1c1c1e', letterSpacing: '-0.1px' }}>{zone.name}</span>
+                {count > 0 && (
+                  <span style={{ fontSize: 10, fontWeight: 600, color: activeZoneId === zone.id ? 'rgba(255,255,255,0.7)' : '#9ca3af', marginLeft: 1 }}>{count}</span>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      })}
+
       {/* Pin overlay */}
       <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 5 }}>
         {mode === 'sublease' ? (
@@ -614,7 +736,7 @@ export default function Map3DView({ selectedCollege, profile, onViewListing, onR
             const isSelected = selectedId === s.id;
             const discount = Math.round((1 - s.price / s.marketRate) * 100);
             const urgColor = s.daysUntilLeave <= 7 ? '#ef4444' : s.daysUntilLeave <= 21 ? '#f97316' : '#6b7280';
-            const typeLabel = s.type === 'sublease' ? '转租' : s.type === 'transfer' ? '转让' : '合租';
+            const typeLabel = s.type === 'sublease' ? 'Sublet' : s.type === 'transfer' ? 'Transfer' : 'Room';
             return (
               <div
                 key={s.id}
@@ -653,7 +775,7 @@ export default function Map3DView({ selectedCollege, profile, onViewListing, onR
                   <span style={{ fontSize: 9, color: isSelected ? 'rgba(255,255,255,0.45)' : '#9ca3af' }}>{typeLabel}</span>
                 </div>
                 <div style={{ width: 2, height: 8, background: isSelected ? '#1c1c1e' : urgColor, marginTop: -1 }} />
-                <div style={{ width: 7, height: 7, borderRadius: '50%', background: isSelected ? '#1c1c1e' : urgColor, border: '2px solid white', boxShadow: '0 1px 4px rgba(0,0,0,0.25)', marginTop: -1 }} />
+                <div style={{ width: 7, height: 7, borderRadius: '50%', background: isSelected ? '#1c1c1e' : urgColor, border: '2px solid white', boxShadow: '0 1px 4px rgba(0,0,0,0.25)', marginTop: -1, animation: s.daysUntilLeave <= 7 && !isSelected ? 'urgentPulse 1.4s ease-in-out infinite' : undefined }} />
               </div>
             );
           })
@@ -662,7 +784,9 @@ export default function Map3DView({ selectedCollege, profile, onViewListing, onR
           pinPositions.map(pos => {
             const listing = listings.find(l => l.id === pos.id);
             if (!listing) return null;
-            if (!typeFilteredListings.some(t => t.id === listing.id)) return null;
+            const inZone = !activeZoneId || getListingZone(listingCoords[listing.id])?.id === activeZoneId;
+            if (mapZoom < 14.5) return null;
+            if (filteredIds && !filteredIds.includes(listing.id)) return null;
             const isSelected = selectedId === listing.id;
             const score = profile ? scores[listing.id] : 0;
             const hasProfile = !!profile;
@@ -687,12 +811,14 @@ export default function Map3DView({ selectedCollege, profile, onViewListing, onR
                   position: 'absolute', left: pos.x, top: pos.y,
                   transform: `translate(-50%, -100%) ${isSelected ? 'scale(1.12)' : 'scale(1)'}`,
                   zIndex: isSelected ? 20 : 10, cursor: 'pointer', pointerEvents: 'auto',
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', transition: 'transform 0.2s ease',
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', transition: 'transform 0.2s ease, opacity 0.2s ease',
+                  opacity: inZone ? 1 : 0.25,
                 }}
               >
                 {isBestMatch && !isSelected && (
                   <span style={{ fontSize: 9, background: '#22c55e', color: 'white', fontWeight: 800, padding: '2px 7px', borderRadius: 20, marginBottom: 4, whiteSpace: 'nowrap', display: 'block' }}>★ Best match</span>
                 )}
+                <div style={{ position: 'relative' }}>
                 <div style={{
                   background: isSelected ? (zoneColor ?? '#1c1c1e') : 'rgba(255,255,255,0.97)',
                   color: isSelected ? 'white' : (zoneColor ?? '#1c1c1e'),
@@ -709,6 +835,10 @@ export default function Map3DView({ selectedCollege, profile, onViewListing, onR
                     <polyline points="9 22 9 12 15 12 15 22" />
                   </svg>
                   <span>${listing.price}/mo</span>
+                </div>
+                {savedIds.has(listing.id) && (
+                  <div style={{ position: 'absolute', top: -5, right: -5, width: 15, height: 15, borderRadius: '50%', background: '#ef4444', border: '2px solid white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 7 }}>❤</div>
+                )}
                 </div>
                 <div style={{ width: 2, height: 8, background: isSelected ? (zoneColor ?? '#1c1c1e') : (zoneColor ?? 'rgba(0,0,0,0.2)'), marginTop: -1 }} />
                 <div style={{ width: 7, height: 7, borderRadius: '50%', background: isSelected ? (zoneColor ?? '#1c1c1e') : (zoneColor ?? dotColor), border: '2px solid white', boxShadow: '0 1px 4px rgba(0,0,0,0.25)', marginTop: -1 }} />
@@ -822,7 +952,7 @@ export default function Map3DView({ selectedCollege, profile, onViewListing, onR
         if (!s) return null;
         const discount = Math.round((1 - s.price / s.marketRate) * 100);
         const urgColor = s.daysUntilLeave <= 7 ? '#ef4444' : s.daysUntilLeave <= 21 ? '#f97316' : '#6b7280';
-        const typeLabel = s.type === 'sublease' ? '🔄 转租' : s.type === 'transfer' ? '📋 转让' : '🏠 合租';
+        const typeLabel = s.type === 'sublease' ? '🔄 Sublet' : s.type === 'transfer' ? '📋 Transfer' : '🏠 Room Share';
         const fmtD = (d: string) => { const [,m,day] = d.split('-'); return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m-1] + ' ' + +day; };
         return (
           <div style={{
@@ -881,7 +1011,7 @@ export default function Map3DView({ selectedCollege, profile, onViewListing, onR
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ fontSize: 11, fontWeight: 700, color: 'white', marginBottom: 1 }}>{s.postedBy}</p>
-                  <p style={{ fontSize: 9, color: 'rgba(255,255,255,0.35)' }}>UIUC student · {s.via === 'individual' ? '个人发布' : '平台挂牌'}</p>
+                  <p style={{ fontSize: 9, color: 'rgba(255,255,255,0.35)' }}>UIUC student · {s.via === 'individual' ? 'Individual' : 'Official platform'}</p>
                 </div>
               </div>
 
@@ -908,12 +1038,37 @@ export default function Map3DView({ selectedCollege, profile, onViewListing, onR
         );
       })()}
 
-      {/* Walk radius legend */}
+      {/* Budget quick slider */}
+      {mode !== 'sublease' && (
+        <div className="absolute left-3 pointer-events-auto" style={{ zIndex: 10, bottom: activeCollege ? 234 : 190 }}>
+          <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-lg border border-black/8 px-3 py-2.5" style={{ width: 156 }}>
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-[9px] font-semibold text-[#9ca3af] uppercase tracking-wider">Budget</span>
+              <span className="text-[11px] font-bold text-[#1c1c1e]">{mapMaxPrice ? `≤ $${mapMaxPrice}` : 'Any'}</span>
+            </div>
+            <input type="range" min={600} max={1400} step={50}
+              value={mapMaxPrice ?? 1400}
+              onChange={e => setMapMaxPrice(+e.target.value === 1400 ? null : +e.target.value)}
+              className="w-full cursor-pointer" style={{ accentColor: '#1c1c1e', height: 4 }} />
+            <div className="flex justify-between mt-1">
+              <span className="text-[8px] text-[#c0bfbb]">$600</span>
+              <span className="text-[8px] text-[#c0bfbb]">Any</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Walk radius legend + time toggle */}
       {activeCollege && (
-        <div className="absolute bottom-[180px] left-3 pointer-events-none" style={{ zIndex: 10 }}>
-          <div className="bg-white/90 backdrop-blur-md px-2.5 py-1.5 rounded-xl shadow-md border border-black/8 flex items-center gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-full border-2 border-dashed border-indigo-500 bg-indigo-50" />
-            <span className="text-[10px] font-semibold text-[#1c1c1e]">10 min walk</span>
+        <div className="absolute bottom-[190px] left-3 pointer-events-auto" style={{ zIndex: 10 }}>
+          <div className="bg-white/90 backdrop-blur-md px-2 py-1.5 rounded-xl shadow-md border border-black/8 flex items-center gap-1.5">
+            <div className="w-2.5 h-2.5 rounded-full border-2 border-dashed border-indigo-500 bg-indigo-50 flex-shrink-0" />
+            {([5, 10, 15] as const).map(m => (
+              <button key={m} onClick={() => setWalkTimeMins(m)}
+                className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md transition-all ${walkTimeMins === m ? 'bg-indigo-500 text-white' : 'text-[#6c6a66] hover:text-indigo-500'}`}>
+                {m}m
+              </button>
+            ))}
           </div>
         </div>
       )}
@@ -929,11 +1084,11 @@ export default function Map3DView({ selectedCollege, profile, onViewListing, onR
               </span>
             </div>
             <div className="flex items-stretch gap-0" style={{ scrollSnapType: 'x mandatory', overflowX: 'auto', scrollbarWidth: 'none' }}>
-              {subleasePins.slice(0, 3).map(s => {
+              {subleasePins.map(s => {
                 const isActive = selectedId === s.id
                 const disc = Math.round((1 - s.price / s.marketRate) * 100)
                 const urgColor = s.daysUntilLeave <= 7 ? 'bg-red-500' : s.daysUntilLeave <= 21 ? 'bg-orange-400' : ''
-                const typeLabel = s.type === 'sublease' ? '🔄 转租' : s.type === 'transfer' ? '📋 转让' : '🏠 合租'
+                const typeLabel = s.type === 'sublease' ? '🔄 Sublet' : s.type === 'transfer' ? '📋 Transfer' : '🏠 Room Share'
                 const fmtD = (d: string) => { const [,m,day] = d.split('-'); return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m-1]+' '+d.split('-')[2].replace(/^0/,''); }
                 return (
                   <button key={s.id}
@@ -963,6 +1118,7 @@ export default function Map3DView({ selectedCollege, profile, onViewListing, onR
                         <span className="text-[10px] text-[#c0bfbb] line-through">${s.marketRate}</span>
                         <span className="text-[10px] font-bold text-green-600 ml-auto">-{disc}%</span>
                       </div>
+                      <p className="text-[9px] font-bold text-green-600 mt-0.5">Save ${s.marketRate - s.price}/mo</p>
                       {/* Dates */}
                       <p className="text-[9px] text-[#9ca3af] mt-0.5">📅 {fmtD(s.availableFrom)} → {fmtD(s.availableTo)}</p>
                       {/* Tags */}
@@ -970,7 +1126,7 @@ export default function Map3DView({ selectedCollege, profile, onViewListing, onR
                         {s.furnished && <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-600">Furnished</span>}
                         {s.utilitiesIncluded && <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-full bg-green-50 text-green-600">Utils ✓</span>}
                         <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded-full ${s.via === 'individual' ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'}`}>
-                          {s.via === 'individual' ? '个人' : '平台'}
+                          {s.via === 'individual' ? 'Indiv.' : 'Official'}
                         </span>
                       </div>
                     </div>
