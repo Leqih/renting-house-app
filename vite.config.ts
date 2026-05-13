@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: '/renting-house-app/',
+  base: '/',
   server: {
     allowedHosts: true,
     port: 5180,
