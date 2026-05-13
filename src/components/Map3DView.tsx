@@ -1089,7 +1089,7 @@ export default function Map3DView({ selectedCollege, profile, onViewListing, onR
                 const disc = Math.round((1 - s.price / s.marketRate) * 100)
                 const urgColor = s.daysUntilLeave <= 7 ? 'bg-red-500' : s.daysUntilLeave <= 21 ? 'bg-orange-400' : ''
                 const typeLabel = s.type === 'sublease' ? '🔄 Sublet' : s.type === 'transfer' ? '📋 Transfer' : '🏠 Room Share'
-                const fmtD = (d: string) => { const [,m,day] = d.split('-'); return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m-1]+' '+d.split('-')[2].replace(/^0/,''); }
+                const fmtD = (d: string) => { const [,m,_day] = d.split('-'); return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m-1]+' '+d.split('-')[2].replace(/^0/,''); }
                 return (
                   <button key={s.id}
                     onClick={() => {
