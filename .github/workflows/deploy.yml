@@ -2,7 +2,7 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [renting-house]
+    branches: [gh-pages-mobile]
 
 permissions:
   contents: read
