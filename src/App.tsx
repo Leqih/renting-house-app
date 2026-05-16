@@ -16,6 +16,7 @@ import WebListingsScreen from './screens/web/WebListingsScreen_v2';
 import WebSavedScreen from './screens/web/WebSavedScreen';
 import WebLandlordDetailScreen from './screens/web/WebLandlordDetailScreen';
 import { listings } from './data/listings';
+import { Analytics } from '@vercel/analytics/react';
 
 type Tab = 'home' | 'explore' | 'listings' | 'community' | 'messages' | 'saved';
 const VALID_TABS: Tab[] = ['home', 'explore', 'listings', 'community', 'messages', 'saved'];
@@ -126,6 +127,7 @@ function App() {
   if (!isMobile) {
     return (
       <>
+        <Analytics />
         <style>{`
           @keyframes slideInRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
           @keyframes fadeInOverlay { from { opacity: 0; } to { opacity: 1; } }
@@ -176,20 +178,25 @@ function App() {
   // ── Mobile layout ─────────────────────────────────────────────────────────
   if (detailListing) {
     return (
-      <div className="flex flex-col h-screen overflow-hidden"
-        style={{ animation: 'slideUp 0.28s cubic-bezier(0.4,0,0.2,1)' }}>
-        <style>{`@keyframes slideUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }`}</style>
-        <ListingDetailScreen
-          listing={detailListing}
-          onBack={closeListing}
-          selectedCollegeId={detailCollegeId}
-        />
-      </div>
+      <>
+        <Analytics />
+        <div className="flex flex-col h-screen overflow-hidden"
+          style={{ animation: 'slideUp 0.28s cubic-bezier(0.4,0,0.2,1)' }}>
+          <style>{`@keyframes slideUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }`}</style>
+          <ListingDetailScreen
+            listing={detailListing}
+            onBack={closeListing}
+            selectedCollegeId={detailCollegeId}
+          />
+        </div>
+      </>
     );
   }
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden">
+    <>
+      <Analytics />
+      <div className="flex flex-col h-screen overflow-hidden">
       <div
         className="flex-1 overflow-y-auto"
         style={{
@@ -203,7 +210,8 @@ function App() {
         {activeTab === 'community' && <CommunityScreen />}
       </div>
       <BottomNav active={activeTab} onNavigate={navigate} />
-    </div>
+      </div>
+    </>
   );
 }
 
